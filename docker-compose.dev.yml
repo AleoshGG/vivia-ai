@@ -1,0 +1,27 @@
+version: '3.8'
+
+# Override para desarrollo
+# Se usa montando los volúmenes para hot-reload
+services:
+  anomaly-api:
+    command: uvicorn src.anomaly_detector_api.main:app --host 0.0.0.0 --port 8001 --reload
+    volumes:
+      - .:/app
+
+  clustering-batch:
+    command: uvicorn src.clustering_batch_service.main:app --host 0.0.0.0 --port 8002 --reload
+    volumes:
+      - .:/app
+
+  llm-local:
+    command: uvicorn src.llm_local_service.main:app --host 0.0.0.0 --port 8003 --reload
+    volumes:
+      - .:/app
+
+  # Podemos agregar un mock de S3 (como MinIO) si se desea
+  # minio:
+  #   image: minio/minio
+  #   command: server /data --console-address ":9001"
+  #   ports:
+  #     - "9000:9000"
+  #     - "9001:9001"

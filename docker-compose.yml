@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./infrastructure/proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - anomaly-api
+      - clustering-batch
+      - llm-local
+    networks:
+      - vivia-network
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
+    networks:
+      - vivia-network
+
+  mlflow:
+    build:
+      context: .
+      dockerfile: ./infrastructure/docker/mlflow.Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_ARTIFACT_ROOT=${MLFLOW_ARTIFACT_ROOT}
+    networks:
+      - vivia-network
+
+  anomaly-api:
+    build:
+      context: .
+      dockerfile: ./infrastructure/docker/anomaly_api.Dockerfile
+    env_file: .env
+    depends_on:
+      - rabbitmq
+      - mlflow
+    networks:
+      - vivia-network
+
+  clustering-batch:
+    build:
+      context: .
+      dockerfile: ./infrastructure/docker/clustering_batch.Dockerfile
+    env_file: .env
+    depends_on:
+      - rabbitmq
+      - mlflow
+    networks:
+      - vivia-network
+
+  llm-local:
+    build:
+      context: .
+      dockerfile: ./infrastructure/docker/llm_local.Dockerfile
+    env_file: .env
+    depends_on:
+      - rabbitmq
+    networks:
+      - vivia-network
+
+networks:
+  vivia-network:
+    driver: bridge
