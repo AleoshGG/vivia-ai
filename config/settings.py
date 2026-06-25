@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     mlflow_tracking_uri: str = "http://localhost:5000"
     mlflow_artifact_root: Optional[str] = None
 
+    # === Servicios Externos ===
+    external_service_url: str = "http://localhost:8080"
+
     # === Servicios ===
     anomaly_api_port: int = 8001
     clustering_service_port: int = 8002
