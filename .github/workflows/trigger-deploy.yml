@@ -1,0 +1,21 @@
+name: Trigger VPS Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disparar deploy en vivia-infrastructure
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GH_PAT }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: 'vivia-infrastructure',
+              workflow_id: 'deploy.yml',
+              ref: 'main'
+            })
