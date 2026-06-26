@@ -1,0 +1,45 @@
+services:
+  mlflow:
+    build:
+      context: .
+      dockerfile: ./infrastructure/docker/mlflow.Dockerfile
+    container_name: vivia-mlflow
+    environment:
+      - MLFLOW_ARTIFACT_ROOT=${MLFLOW_ARTIFACT_ROOT}
+    networks:
+      - vivia_network
+
+  anomaly-api:
+    build:
+      context: .
+      dockerfile: ./infrastructure/docker/anomaly_api.Dockerfile
+    container_name: vivia-anomaly-api
+    env_file: .env
+    depends_on:
+      - mlflow
+    networks:
+      - vivia_network
+
+  clustering-batch:
+    build:
+      context: .
+      dockerfile: ./infrastructure/docker/clustering_batch.Dockerfile
+    container_name: vivia-clustering-batch
+    env_file: .env
+    depends_on:
+      - mlflow
+    networks:
+      - vivia_network
+
+  llm-local:
+    build:
+      context: .
+      dockerfile: ./infrastructure/docker/llm_local.Dockerfile
+    container_name: vivia-llm-local
+    env_file: .env
+    networks:
+      - vivia_network
+
+networks:
+  vivia_network:
+    external: true

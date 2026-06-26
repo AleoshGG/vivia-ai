@@ -13,7 +13,9 @@ app = FastAPI(
     title="LLM Local Service",
     description="Microservicio para inferencia con LLM local.",
     version="0.1.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    docs_url="/api/llm/docs",
+    openapi_url="/api/llm/openapi.json",
 )
 
 # Incluir routers

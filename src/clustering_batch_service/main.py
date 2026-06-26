@@ -13,7 +13,9 @@ app = FastAPI(
     title="Clustering Batch Service",
     description="Microservicio de IA para clustering batch.",
     version="0.1.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    docs_url="/api/clustering/docs",
+    openapi_url="/api/clustering/openapi.json",
 )
 
 # Incluir routers

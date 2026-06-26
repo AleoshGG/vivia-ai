@@ -13,7 +13,9 @@ app = FastAPI(
     title="Anomaly Detector API",
     description="Microservicio de IA para detección de anomalías.",
     version="0.1.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    docs_url="/api/anomaly/docs",
+    openapi_url="/api/anomaly/openapi.json",
 )
 
 # Incluir routers
