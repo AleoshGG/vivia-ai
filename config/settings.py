@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     internal_api_key: str
 
     # === Google Cloud Storage ===
-    gcs_bucket_name: str
+    gcs_bucket_name: Optional[str] = None
     gcs_credentials_path: Optional[str] = None
 
     # === RabbitMQ ===
