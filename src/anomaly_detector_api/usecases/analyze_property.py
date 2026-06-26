@@ -20,7 +20,7 @@ class AnalyzePropertyUseCase:
         )
 
         base_url = settings.external_service_url.rstrip("/")
-        path = "/internal/validations/anomaly/result"
+        path = "/api/internal/validations/anomaly/result"
         url = f"{base_url}{path}"
 
         headers = {"X-Internal-API-Key": settings.internal_api_key}

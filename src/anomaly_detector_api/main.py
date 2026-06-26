@@ -1,13 +1,20 @@
-from fastapi import FastAPI
+import threading
 from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
 from .controllers import anomaly_controller
+from .messaging.anomaly_queue_consumer import AnomalyQueueConsumer
 from shared.health import router as health_router
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Setup inicial (ej: cargar modelo desde MLflow, conectar RabbitMQ)
+    consumer = AnomalyQueueConsumer()
+    thread = threading.Thread(target=consumer.run, daemon=True, name="anomaly-queue-consumer")
+    thread.start()
     yield
-    # Teardown (ej: cerrar conexiones)
+    consumer.stop()
 
 app = FastAPI(
     title="Anomaly Detector API",
