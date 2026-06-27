@@ -15,6 +15,11 @@ services:
       dockerfile: ./infrastructure/docker/anomaly_api.Dockerfile
     container_name: vivia-anomaly-api
     env_file: .env
+    # Los artefactos del modelo viven fuera de la imagen (no se versionan en Git
+    # ni se hornean en el build). En el VPS se montan desde MODELS_REGISTRY_HOST;
+    # en local cae al directorio del repo por defecto.
+    volumes:
+      - ${MODELS_REGISTRY_HOST:-./models_registry}:/app/models_registry:ro
     depends_on:
       - mlflow
     networks:
