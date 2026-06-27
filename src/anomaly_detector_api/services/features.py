@@ -22,7 +22,7 @@ PROPERTY_TYPE_ID_MAP: dict[str, str] = {
 }
 
 
-def build_features(draft: Draft, feature_cols: list[str]) -> np.ndarray:
+def build_features(draft: Draft, feature_cols: list[str]) -> pd.DataFrame:
     """Transforma un Draft en el vector de features que espera el modelo.
 
     Reproduce exactamente el pipeline del notebook 04:
@@ -56,4 +56,6 @@ def build_features(draft: Draft, feature_cols: list[str]) -> np.ndarray:
         frame[f'type_{pt}'] = 1.0 if pt == pt_name else 0.0
 
     frame = frame.reindex(columns=feature_cols, fill_value=0.0)
-    return frame.values  # shape (1, 16)
+    # Se retorna el DataFrame (con nombres de columna) para que StandardScaler,
+    # que fue ajustado con feature names, no emita el UserWarning y valide el orden.
+    return frame  # shape (1, 16)

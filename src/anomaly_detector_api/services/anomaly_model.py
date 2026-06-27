@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 import joblib
-import numpy as np
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class AnomalyModel:
             metadata.get('roc_auc'), self._threshold, len(self._cols),
         )
 
-    def predict(self, raw_features: np.ndarray) -> tuple[bool, float]:
+    def predict(self, raw_features: pd.DataFrame) -> tuple[bool, float]:
         """Escala y clasifica. Síncrono — llamar desde run_in_executor."""
         scaled = self._scaler.transform(raw_features)
         score  = float(self._model.decision_function(scaled)[0])
