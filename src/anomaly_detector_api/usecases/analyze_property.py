@@ -4,23 +4,46 @@ import httpx
 
 from config.settings import settings
 from ..models.property import PropertyRequest, AnalysisPayload
+from ..services.anomaly_model import AnomalyModel
+from ..services.features import build_features
 
 logger = logging.getLogger(__name__)
 
 _WEBHOOK_PATH = "/internal/validations/anomaly/result"
-_MAX_RETRIES = 3
+_MAX_RETRIES  = 3
 _RETRY_DELAYS = [2, 5, 10]
 
 
 class AnalyzePropertyUseCase:
 
+    def __init__(self, model: AnomalyModel):
+        self._model = model
+
     async def execute(self, request: PropertyRequest) -> dict:
-        await asyncio.sleep(2)
+        loop     = asyncio.get_running_loop()
+        features = build_features(request.draft, self._model.feature_cols)
+
+        # predict() es síncrono (numpy/sklearn) — corre en thread pool para no bloquear el event loop
+        is_anomaly, score = await loop.run_in_executor(
+            None, self._model.predict, features
+        )
+
+        logger.info(
+            "Análisis completado — draftId=%s  is_anomaly=%s  score=%.4f",
+            request.draft.id, is_anomaly, score,
+        )
+
+        approved = not is_anomaly
+        reason = (
+            "Propiedad aprobada tras análisis de anomalías."
+            if approved
+            else f"Propiedad rechazada: anomalía detectada (score={score:.4f})."
+        )
 
         analysis_payload = AnalysisPayload(
             draft_id=request.draft.id,
-            approved=True,
-            reason="Propiedad aprobada automáticamente por análisis simulado",
+            approved=approved,
+            reason=reason,
         )
 
         status_code = await self._post_result(analysis_payload)
@@ -47,7 +70,7 @@ class AnalyzePropertyUseCase:
         return self._response(analysis_payload, status_code)
 
     async def _post_result(self, payload: AnalysisPayload) -> int:
-        url = settings.external_service_url.rstrip("/") + _WEBHOOK_PATH
+        url     = settings.external_service_url.rstrip("/") + _WEBHOOK_PATH
         headers = {"X-Internal-Api-Key": settings.internal_api_key}
 
         for attempt in range(1, _MAX_RETRIES + 1):
@@ -77,9 +100,9 @@ class AnalyzePropertyUseCase:
     @staticmethod
     def _response(payload: AnalysisPayload, status_code: int) -> dict:
         return {
-            "status": "completed",
-            "draftId": payload.draft_id,
-            "approved": payload.approved,
-            "reason": payload.reason,
-            "external_status_code": status_code,
+            "status"               : "completed",
+            "draftId"              : payload.draft_id,
+            "approved"             : payload.approved,
+            "reason"               : payload.reason,
+            "external_status_code" : status_code,
         }

@@ -74,3 +74,5 @@ models_registry/*
 # OS files
 .DS_Store
 Thumbs.db
+
+datasets/

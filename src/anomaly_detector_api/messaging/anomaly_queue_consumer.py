@@ -7,6 +7,7 @@ import pika
 
 from config.settings import settings
 from ..models.property import PropertyRequest
+from ..services.anomaly_model import AnomalyModel
 from ..usecases.analyze_property import AnalyzePropertyUseCase
 
 logger = logging.getLogger(__name__)
@@ -17,10 +18,11 @@ DLQ_NAME = "vivia.dlq"
 
 class AnomalyQueueConsumer:
 
-    def __init__(self):
+    def __init__(self, model: AnomalyModel):
+        self._model      = model
         self._stop_event = threading.Event()
         self._connection = None
-        self._channel = None
+        self._channel    = None
 
     def run(self):
         delay = 5
@@ -79,7 +81,7 @@ class AnomalyQueueConsumer:
             payload = json.loads(body)
             draft_id = payload.get("draft", {}).get("id", "unknown")
             request = PropertyRequest.model_validate({"draft": payload["draft"]})
-            asyncio.run(AnalyzePropertyUseCase().execute(request))
+            asyncio.run(AnalyzePropertyUseCase(self._model).execute(request))
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
             logger.error("Error procesando mensaje de anomalía draftId=%s: %s", draft_id, e)

@@ -1,3 +1,4 @@
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 
@@ -30,6 +31,9 @@ class Settings(BaseSettings):
 
     # === Servicios Externos ===
     external_service_url: str = "http://localhost:8080"
+
+    # === Model Registry ===
+    model_registry_path: Path = Path('models_registry')
 
     # === Servicios ===
     anomaly_api_port: int = 8001

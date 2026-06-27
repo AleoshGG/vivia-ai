@@ -6,3 +6,5 @@ seaborn
 google-cloud-storage
 mlflow
 jupyter
+jupyterlab
+pyarrow
