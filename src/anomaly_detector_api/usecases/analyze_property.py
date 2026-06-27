@@ -4,6 +4,7 @@ import httpx
 
 from config.settings import settings
 from ..models.property import PropertyRequest, AnalysisPayload
+from ..persistence.inference_repository import InferenceRepository
 from ..services.anomaly_model import AnomalyModel
 from ..services.features import build_features
 
@@ -16,8 +17,15 @@ _RETRY_DELAYS = [2, 5, 10]
 
 class AnalyzePropertyUseCase:
 
-    def __init__(self, model: AnomalyModel):
-        self._model = model
+    def __init__(
+        self,
+        model: AnomalyModel,
+        repository: InferenceRepository,
+        source: str = "http",
+    ):
+        self._model      = model
+        self._repository = repository
+        self._source     = source
 
     async def execute(self, request: PropertyRequest) -> dict:
         loop     = asyncio.get_running_loop()
@@ -39,6 +47,10 @@ class AnalyzePropertyUseCase:
             if approved
             else f"Propiedad rechazada: anomalía detectada (score={score:.4f})."
         )
+
+        # La inferencia se persiste ANTES del webhook: el registro no debe
+        # depender del éxito de la notificación al servicio externo.
+        await self._persist(request, is_anomaly, score, approved, reason, features)
 
         analysis_payload = AnalysisPayload(
             draft_id=request.draft.id,
@@ -68,6 +80,27 @@ class AnalyzePropertyUseCase:
             return self._response(fallback_payload, fallback_status)
 
         return self._response(analysis_payload, status_code)
+
+    async def _persist(self, request, is_anomaly, score, approved, reason, features) -> None:
+        """Guarda la inferencia. Un fallo de persistencia no aborta el análisis."""
+        try:
+            # cast a float nativo: numpy.float64 no es serializable a JSONB
+            features_dict = {k: float(v) for k, v in features.iloc[0].items()}
+            await self._repository.save(
+                draft_id=request.draft.id,
+                is_anomaly=is_anomaly,
+                score=score,
+                approved=approved,
+                reason=reason,
+                model_version=self._model.model_version,
+                source=self._source,
+                features=features_dict,
+            )
+        except Exception as exc:
+            logger.error(
+                "No se pudo persistir la inferencia para draftId=%s: %s",
+                request.draft.id, exc,
+            )
 
     async def _post_result(self, payload: AnalysisPayload) -> int:
         url     = settings.external_service_url.rstrip("/") + _WEBHOOK_PATH
@@ -99,10 +132,5 @@ class AnalyzePropertyUseCase:
 
     @staticmethod
     def _response(payload: AnalysisPayload, status_code: int) -> dict:
-        return {
-            "status"               : "completed",
-            "draftId"              : payload.draft_id,
-            "approved"             : payload.approved,
-            "reason"               : payload.reason,
-            "external_status_code" : status_code,
-        }
+        # Se devuelve exactamente el mismo JSON que se envió al webhook.
+        return payload.model_dump(by_alias=True)

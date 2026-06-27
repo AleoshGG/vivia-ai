@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Dict, List, Optional
 from datetime import datetime
+from uuid import UUID
 
 
 class PropertyType(BaseModel):
@@ -83,3 +84,29 @@ class PropertyAnalysisResponse(BaseModel):
     external_status_code: int = Field(..., description="Código HTTP devuelto por el servicio externo")
 
     model_config = {"populate_by_name": True}
+
+
+class InferenceRecord(BaseModel):
+    """Representación de salida de una inferencia persistida."""
+
+    id: UUID
+    draft_id: str = Field(..., serialization_alias="draftId")
+    is_anomaly: bool = Field(..., serialization_alias="isAnomaly")
+    score: float
+    approved: bool
+    reason: str
+    model_version: str = Field(..., serialization_alias="modelVersion")
+    source: str
+    features: dict
+    created_at: datetime = Field(..., serialization_alias="createdAt")
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+
+class InferenceListResponse(BaseModel):
+    """Listado paginado de inferencias."""
+
+    total: int
+    limit: int
+    offset: int
+    items: List[InferenceRecord]

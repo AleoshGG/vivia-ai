@@ -1,4 +1,21 @@
 services:
+  postgres:
+    image: postgres:16
+    container_name: vivia-postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - vivia-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vivia_network
+
   mlflow:
     build:
       context: .
@@ -6,6 +23,14 @@ services:
     container_name: vivia-mlflow
     environment:
       - MLFLOW_ARTIFACT_ROOT=${MLFLOW_ARTIFACT_ROOT}
+      - MLFLOW_BACKEND_STORE_URI=${MLFLOW_BACKEND_STORE_URI}
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcs.json
+    volumes:
+      # Credencial del service account para escribir artefactos en GCS.
+      - ${GCS_CREDENTIALS_HOST:-./credentials/gcs-vivia.json}:/secrets/gcs.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - vivia_network
 
@@ -15,13 +40,20 @@ services:
       dockerfile: ./infrastructure/docker/anomaly_api.Dockerfile
     container_name: vivia-anomaly-api
     env_file: .env
+    environment:
+      # Necesaria para descargar el modelo (artefactos) desde GCS vía MLflow.
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcs.json
     # Los artefactos del modelo viven fuera de la imagen (no se versionan en Git
     # ni se hornean en el build). En el VPS se montan desde MODELS_REGISTRY_HOST;
     # en local cae al directorio del repo por defecto.
     volumes:
       - ${MODELS_REGISTRY_HOST:-./models_registry}:/app/models_registry:ro
+      - ${GCS_CREDENTIALS_HOST:-./credentials/gcs-vivia.json}:/secrets/gcs.json:ro
     depends_on:
-      - mlflow
+      mlflow:
+        condition: service_started
+      postgres:
+        condition: service_healthy
     networks:
       - vivia_network
 
@@ -44,6 +76,9 @@ services:
     env_file: .env
     networks:
       - vivia_network
+
+volumes:
+  vivia-pg-data:
 
 networks:
   vivia_network:

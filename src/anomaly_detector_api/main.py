@@ -1,27 +1,39 @@
 import threading
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 from fastapi import FastAPI
 
 from config.settings import settings
 from .controllers import anomaly_controller
 from .messaging.anomaly_queue_consumer import AnomalyQueueConsumer
+from .persistence.database import build_engine, build_session_factory, init_models
+from .persistence.inference_repository import InferenceRepository
 from .services.anomaly_model import AnomalyModel
 from shared.health import router as health_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    model = AnomalyModel(Path(settings.model_registry_path) / 'anomaly')
+    # Base de datos: engine + repositorio de inferencias
+    engine          = build_engine()
+    session_factory = build_session_factory(engine)
+    await init_models(engine)
+    repository = InferenceRepository(session_factory)
+    app.state.db_engine            = engine
+    app.state.inference_repository = repository
+
+    # Modelo desde el Model Registry de MLflow
+    model = AnomalyModel(settings.anomaly_model_name, settings.anomaly_model_stage)
     model.load()
     app.state.anomaly_model = model
 
-    consumer = AnomalyQueueConsumer(model=model)
+    # Consumidor de la cola de RabbitMQ
+    consumer = AnomalyQueueConsumer(model=model, repository=repository)
     thread   = threading.Thread(target=consumer.run, daemon=True, name="anomaly-queue-consumer")
     thread.start()
     yield
     consumer.stop()
+    await engine.dispose()
 
 
 app = FastAPI(

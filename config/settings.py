@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     # === MLflow ===
     mlflow_tracking_uri: str = "http://localhost:5000"
     mlflow_artifact_root: Optional[str] = None
+    anomaly_model_name: str = "anomaly"
+    anomaly_model_stage: str = "Production"
+
+    # === Base de datos (PostgreSQL) ===
+    database_url: str = "postgresql+asyncpg://vivia:changeme@localhost:5432/vivia"
 
     # === Servicios Externos ===
     external_service_url: str = "http://localhost:8080"

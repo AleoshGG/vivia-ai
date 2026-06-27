@@ -17,5 +17,9 @@ COPY shared/ shared/
 COPY config/ config/
 COPY data_lake/ data_lake/
 
+# Migraciones de base de datos (Alembic)
+COPY alembic.ini alembic.ini
+COPY alembic/ alembic/
+
 # Comando por defecto
 CMD ["uvicorn", "src.anomaly_detector_api.main:app", "--host", "0.0.0.0", "--port", "8001"]

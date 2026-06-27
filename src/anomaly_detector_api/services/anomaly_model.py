@@ -1,40 +1,46 @@
-import json
 import logging
-from pathlib import Path
 
-import joblib
 import pandas as pd
+
+from shared.model_loader import ModelLoader
 
 logger = logging.getLogger(__name__)
 
 
 class AnomalyModel:
-    """Carga los artefactos del modelo una sola vez al startup y expone predict()."""
+    """
+    Carga el modelo de anomalías desde el Model Registry de MLflow una sola vez
+    al startup y expone predict(). El modelo `pyfunc` empaqueta el Isolation
+    Forest, su scaler, el umbral y el orden de columnas (ver `anomaly_pyfunc`).
+    """
 
-    def __init__(self, model_dir: Path):
-        self._model_dir = model_dir
-        self._model     = None
-        self._scaler    = None
-        self._cols      = None
-        self._threshold = None
+    def __init__(self, model_name: str, stage: str = "Production"):
+        self._model_name = model_name
+        self._stage      = stage
+        self._pyfunc     = None
+        self._version    = None
+        self._cols       = None
 
     def load(self) -> None:
-        self._model     = joblib.load(self._model_dir / 'isolation_forest_v1.joblib')
-        self._scaler    = joblib.load(self._model_dir / 'scaler_v1.joblib')
-        self._cols      = json.loads((self._model_dir / 'feature_columns_v1.json').read_text())
-        metadata        = json.loads((self._model_dir / 'metadata_v1.json').read_text())
-        self._threshold = metadata['score_threshold']
+        loader = ModelLoader()
+        self._pyfunc, self._version = loader.load_model(self._model_name, self._stage)
+        impl = self._pyfunc.unwrap_python_model()
+        self._cols = impl.feature_cols
         logger.info(
-            "Modelo de anomalías cargado — roc_auc=%s  threshold=%s  features=%d",
-            metadata.get('roc_auc'), self._threshold, len(self._cols),
+            "Modelo de anomalías cargado — name=%s stage=%s version=%s features=%d",
+            self._model_name, self._stage, self._version, len(self._cols),
         )
 
     def predict(self, raw_features: pd.DataFrame) -> tuple[bool, float]:
-        """Escala y clasifica. Síncrono — llamar desde run_in_executor."""
-        scaled = self._scaler.transform(raw_features)
-        score  = float(self._model.decision_function(scaled)[0])
-        return (-score > self._threshold), score
+        """Clasifica un vector de features. Síncrono — llamar desde run_in_executor."""
+        result = self._pyfunc.predict(raw_features)
+        row = result.iloc[0]
+        return bool(row["is_anomaly"]), float(row["score"])
 
     @property
     def feature_cols(self) -> list[str]:
         return self._cols
+
+    @property
+    def model_version(self) -> str:
+        return self._version
