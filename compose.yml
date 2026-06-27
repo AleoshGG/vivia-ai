@@ -1,21 +1,4 @@
 services:
-  postgres:
-    image: postgres:16
-    container_name: vivia-postgres
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-    volumes:
-      - vivia-pg-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - vivia_network
-
   mlflow:
     build:
       context: .
@@ -28,9 +11,6 @@ services:
     volumes:
       # Credencial del service account para escribir artefactos en GCS.
       - ${GCS_CREDENTIALS_HOST:-./credentials/gcs-vivia.json}:/secrets/gcs.json:ro
-    depends_on:
-      postgres:
-        condition: service_healthy
     networks:
       - vivia_network
 
@@ -52,8 +32,6 @@ services:
     depends_on:
       mlflow:
         condition: service_started
-      postgres:
-        condition: service_healthy
     networks:
       - vivia_network
 
@@ -76,9 +54,6 @@ services:
     env_file: .env
     networks:
       - vivia_network
-
-volumes:
-  vivia-pg-data:
 
 networks:
   vivia_network:
