@@ -1,7 +1,9 @@
 FROM python:3.12-slim
 
-# psycopg2 (backend-store Postgres) + gcsfs (artifact-store GCS)
-RUN pip install --no-cache-dir mlflow psycopg2-binary gcsfs google-cloud-storage
+# MLflow se fija a 2.x: 3.x trae validación de Host header (rechaza el host
+# interno 'mlflow:5000' con 403) y eliminó los stages del Model Registry que usa
+# el servicio. psycopg2 (backend Postgres) + gcsfs (artifact-store GCS).
+RUN pip install --no-cache-dir "mlflow>=2.10.0,<3" psycopg2-binary gcsfs google-cloud-storage
 
 # Exponer el puerto por defecto de MLflow
 EXPOSE 5000
