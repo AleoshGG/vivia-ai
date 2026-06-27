@@ -7,7 +7,7 @@ from ..models.property import PropertyRequest, AnalysisPayload
 
 logger = logging.getLogger(__name__)
 
-_WEBHOOK_PATH = "/api/internal/validations/anomaly/result"
+_WEBHOOK_PATH = "/internal/validations/anomaly/result"
 _MAX_RETRIES = 3
 _RETRY_DELAYS = [2, 5, 10]
 
@@ -50,7 +50,7 @@ class AnalyzePropertyUseCase:
         url = settings.external_service_url.rstrip("/") + _WEBHOOK_PATH
         headers = {"X-Internal-Api-Key": settings.internal_api_key}
 
-        for attempt, delay in enumerate((*_RETRY_DELAYS, None), start=1):
+        for attempt in range(1, _MAX_RETRIES + 1):
             try:
                 async with httpx.AsyncClient(timeout=10.0) as client:
                     response = await client.post(
@@ -69,8 +69,8 @@ class AnalyzePropertyUseCase:
                     "Intento %d/%d: error de conexión al webhook para draftId=%s: %s",
                     attempt, _MAX_RETRIES, payload.draft_id, exc,
                 )
-            if delay is not None:
-                await asyncio.sleep(delay)
+            if attempt < _MAX_RETRIES:
+                await asyncio.sleep(_RETRY_DELAYS[attempt - 1])
 
         return 503
 
