@@ -21,5 +21,8 @@ COPY data_lake/ data_lake/
 COPY alembic.ini alembic.ini
 COPY alembic/ alembic/
 
+# Scripts operativos (registro de modelo en MLflow, etc.)
+COPY scripts/ scripts/
+
 # Comando por defecto
 CMD ["uvicorn", "src.anomaly_detector_api.main:app", "--host", "0.0.0.0", "--port", "8001"]
