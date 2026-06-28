@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
     app.state.anomaly_model = model
 
     # Consumidor de la cola de RabbitMQ
-    consumer = AnomalyQueueConsumer(model=model, repository=repository)
+    consumer = AnomalyQueueConsumer(model=model)
     thread   = threading.Thread(target=consumer.run, daemon=True, name="anomaly-queue-consumer")
     thread.start()
     yield
