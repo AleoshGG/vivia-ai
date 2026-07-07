@@ -1,0 +1,184 @@
+\seccionreporte{Preprocesamiento y validación de entrada}{sec:preprocesamiento}
+
+\propositoseccion{%
+  El mismo pipeline debe ejecutarse en entrenamiento e inferencia. Documente reglas, escalado y rechazo de datos inválidos.%
+}
+
+\subsection{Esquema de entrada}
+
+El microservicio expone la inferencia síncrona en el endpoint
+\texttt{POST /api/anomaly/analyze}, protegido por la cabecera de autenticación
+interna \texttt{X-Internal-API-Key}. El cuerpo de la petición es un objeto JSON
+con un único campo \texttt{draft}, que representa la publicación de propiedad a
+analizar. El esquema se valida mediante modelos Pydantic
+(\texttt{PropertyRequest} $\rightarrow$ \texttt{Draft}), de modo que la
+plataforma envía el \textit{draft} completo y el servicio extrae de él únicamente
+los atributos relevantes para el modelo.
+
+La Tabla~\ref{tab:campos_entrada} resume los campos del \texttt{draft} que
+intervienen efectivamente en la construcción del vector de características; el
+resto de los campos (dirección, archivos multimedia, fechas, etc.) se validan
+estructuralmente pero no alimentan al modelo.
+
+\begin{table}[H]
+  \centering
+  \caption{Campos del \textit{draft} utilizados por el modelo}
+  \label{tab:campos_entrada}
+  \small
+  \begin{tabularx}{\textwidth}{@{}lXl@{}}
+    \toprule
+    Campo (alias JSON) & Descripción & Tipo \\
+    \midrule
+    \texttt{areaM2}           & Superficie del inmueble (m\textsuperscript{2}) & numérico \\
+    \texttt{listedPrice}      & Precio publicado (MXN)                          & numérico \\
+    \texttt{pricePerM2}       & Precio por metro cuadrado (MXN/m\textsuperscript{2}) & numérico \\
+    \texttt{bedrooms}         & Número de recámaras                             & entero \\
+    \texttt{bathrooms}        & Número de baños                                 & numérico \\
+    \texttt{parkingSpaces}    & Cajones de estacionamiento                     & entero \\
+    \texttt{constructionYear} & Año de construcción (deriva \texttt{antiguedad}) & entero \\
+    \texttt{condominium}      & Pertenece a condominio                          & booleano \\
+    \texttt{amenityIds}       & Lista de amenidades (deriva \texttt{n\_amenities}) & arreglo \\
+    \texttt{totalImages}      & Número de imágenes de la publicación            & entero \\
+    \texttt{propertyType}     & Tipo de propiedad (\texttt{id}, \texttt{name})  & objeto \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Ejemplo (abreviado) del cuerpo esperado:
+
+\begin{lstlisting}[style=jsonstyle]
+{
+  "draft": {
+    "id": "a1b2c3d4-0000-0000-0000-000000000001",
+    "propertyType": {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "name": "Casa"
+    },
+    "areaM2": 120.0,
+    "listedPrice": 2500000.0,
+    "pricePerM2": 20833.33,
+    "bedrooms": 3,
+    "bathrooms": 2.0,
+    "parkingSpaces": 2,
+    "constructionYear": 2015,
+    "condominium": false,
+    "amenityIds": ["gym", "alberca"],
+    "totalImages": 12
+  }
+}
+\end{lstlisting}
+
+\subsection{Validaciones implementadas}
+
+La validación de la entrada se delega a Pydantic, que verifica el esquema antes
+de que la petición alcance la lógica de negocio. La Tabla~\ref{tab:validaciones}
+describe el comportamiento ante datos inválidos.
+
+\begin{table}[H]
+  \centering
+  \caption{Reglas de validación de la entrada}
+  \label{tab:validaciones}
+  \small
+  \begin{tabular}{@{}p{3.2cm}p{9.5cm}@{}}
+    \toprule
+    Regla & Comportamiento \\
+    \midrule
+    Autenticación & HTTP 403 si falta o es inválida la cabecera \texttt{X-Internal-API-Key}. \\
+    Campos obligatorios & HTTP 422 si falta algún atributo requerido del \texttt{draft}; solo \texttt{description} e \texttt{interiorNumber} son opcionales. \\
+    Tipos de dato & HTTP 422 ante incompatibilidad de tipo (p.\ ej.\ texto donde se espera numérico); Pydantic aplica coerción segura cuando es posible. \\
+    Rangos & No se imponen límites mín/máx explícitos en la capa de entrada: el modelo es robusto a magnitudes gracias a la transformación \texttt{log1p} y al \texttt{StandardScaler}, y valores físicamente imposibles constituyen precisamente las anomalías que se busca detectar. \\
+    Cardinalidad & Una publicación (\texttt{draft}) por petición; la inferencia no opera en lotes. La paginación del historial sí acota su tamaño ($1 \le$ \texttt{limit} $\le 200$). \\
+    Valores nulos & Los campos requeridos no admiten nulos (HTTP 422). En la construcción del vector, un \texttt{propertyType} desconocido produce un \textit{one-hot} con todas sus columnas en cero (\texttt{reindex(fill\_value=0.0)}), sin abortar la inferencia. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Transformaciones}
+
+El \textit{draft} validado se transforma en el vector de 16 características que
+espera el modelo mediante la función \texttt{build\_features}, que reproduce
+paso a paso el pipeline del notebook de entrenamiento
+(\texttt{04\_model\_training.ipynb}):
+
+\begin{enumerate}
+  \item \textbf{Extracción y derivación:} se seleccionan los 10 campos numéricos
+  y se calculan los atributos derivados ---\texttt{antiguedad}
+  ($a\tilde{n}o_{actual} - constructionYear$) y \texttt{n\_amenities}
+  (cardinalidad de \texttt{amenityIds})--- mapeando además los nombres de campo
+  del \textit{draft} a los del modelo.
+  \item \textbf{Transformación logarítmica:} se aplica \texttt{log1p} a las
+  variables de distribución sesgada (\texttt{areaM2}, \texttt{listedPrice},
+  \texttt{pricePerM2}) para aproximarlas a la normalidad.
+  \item \textbf{Codificación:} el \texttt{propertyType} se codifica mediante
+  \textit{one-hot} con seis columnas fijas (\texttt{type\_Bodega},
+  \texttt{type\_Casa}, \texttt{type\_Departamento},
+  \texttt{type\_Local Comercial}, \texttt{type\_Oficina},
+  \texttt{type\_Terreno}); se resuelve el tipo a partir de su \texttt{id} con un
+  mapa estable y, en su defecto, de su \texttt{name}.
+  \item \textbf{Escalado:} dentro del artefacto, el \texttt{StandardScaler}
+  ajustado en entrenamiento estandariza el vector completo antes de la inferencia.
+  \item \textbf{Alineación con el modelo:} las columnas se reordenan al orden
+  exacto del entrenamiento mediante \texttt{reindex(columns=feature\_cols)},
+  donde \texttt{feature\_cols} proviene del artefacto exportado
+  (\texttt{feature\_columns\_v1.json}). El \texttt{DataFrame} conserva los nombres
+  de columna para que el \texttt{StandardScaler}, ajustado con nombres, valide el
+  orden y no emita advertencias.
+\end{enumerate}
+
+\begin{lstlisting}[style=pythonstyle]
+# Pipeline real: el preprocesamiento (build_features) precede al artefacto pyfunc,
+# que encapsula StandardScaler + IsolationForest + umbral.
+import numpy as np
+import pandas as pd
+
+NUMERIC_COLS = [
+    'areaM2', 'listedPrice', 'pricePerM2', 'bedrooms', 'bathrooms',
+    'parkingSpaces', 'antiguedad', 'condominium', 'n_amenities', 'total_images',
+]
+LOG_COLS    = ['areaM2', 'listedPrice', 'pricePerM2']
+KNOWN_TYPES = ['Bodega', 'Casa', 'Departamento',
+               'Local Comercial', 'Oficina', 'Terreno']
+
+def build_features(row: dict, feature_cols: list[str]) -> pd.DataFrame:
+    frame = pd.DataFrame([row])
+    frame[LOG_COLS] = np.log1p(frame[LOG_COLS])          # 1. log1p
+    for pt in KNOWN_TYPES:                                 # 2. one-hot fijo
+        frame[f'type_{pt}'] = 1.0 if pt == row['propertyType'] else 0.0
+    return frame.reindex(columns=feature_cols, fill_value=0.0)  # 3. orden fijo
+\end{lstlisting}
+
+\subsection{Serialización del pipeline}
+
+El preprocesamiento se divide en dos componentes con responsabilidades
+distintas: la transformación dependiente del dominio (\texttt{build\_features},
+en código fuente) y la transformación estadística aprendida
+(\texttt{StandardScaler}, serializada con \texttt{joblib}). Esta última, junto
+con el \textit{Isolation Forest}, el umbral de decisión y el orden de columnas,
+se empaqueta como un único modelo \texttt{pyfunc} de MLflow
+(\texttt{AnomalyDetectorModel}), versionado en el Model Registry. Así, la
+inferencia carga al arranque un artefacto autocontenido que aplica
+\texttt{reindex} $\rightarrow$ \texttt{scaler.transform} $\rightarrow$
+\texttt{decision\_function} $\rightarrow$ umbral en un solo paso.
+
+\subsection{Consistencia entrenamiento vs.\ producción}
+
+La paridad entre el preprocesamiento de entrenamiento y el de producción se
+garantiza mediante tres mecanismos:
+
+\begin{itemize}
+  \item \textbf{Pipeline replicado y documentado.} La función
+  \texttt{build\_features} del servicio reproduce explícitamente, paso a paso, el
+  pipeline del notebook \texttt{04\_model\_training.ipynb} (mismas columnas,
+  mismas columnas a transformar con \texttt{log1p} y mismas seis categorías de
+  \textit{one-hot}).
+  \item \textbf{Artefactos como única fuente de verdad.} El orden de columnas
+  (\texttt{feature\_columns\_v1.json}) y el \texttt{StandardScaler}
+  (\texttt{scaler\_v1.joblib}) no se recodifican en el servicio, sino que se
+  cargan desde el mismo artefacto generado durante el entrenamiento. Cualquier
+  desalineación de columnas se corrige por nombre mediante \texttt{reindex},
+  evitando errores de posición silenciosos.
+  \item \textbf{Versionado conjunto en MLflow.} El modelo, su \textit{scaler}, el
+  umbral y el orden de columnas se promueven juntos como una sola versión a
+  \texttt{Production}, de modo que la inferencia siempre emplea exactamente la
+  combinación de preprocesamiento y modelo con la que fue evaluada.
+\end{itemize}

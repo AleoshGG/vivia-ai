@@ -1,0 +1,189 @@
+\seccionreporte{Implementación del microservicio}{sec:implementacion}
+
+\propositoseccion{%
+  Resume la estructura del repositorio y los módulos críticos. No pegue todo el código: cite rutas y fragmentos representativos.%
+}
+
+\subsection{Repositorio}
+
+URL: \ReporteRepositorio{} (\url{https://github.com/AleoshGG/vivia-ai}).
+
+El servicio sigue una arquitectura MVC + SOLID, con el microservicio de detección
+de anomalías organizado por capas dentro de \texttt{src/anomaly\_detector\_api/}.
+
+\begin{tabular}{@{}lp{9.5cm}@{}}
+  \toprule
+  Ruta & Contenido \\
+  \midrule
+  \texttt{src/anomaly\_detector\_api/} & Código del microservicio (controllers, usecases, services, persistence, messaging, models) \\
+  \texttt{shared/} & Componentes transversales: autenticación, carga de modelos, salud, cola \\
+  \texttt{config/} & Configuración tipada (\texttt{settings.py}) y \textit{logging} \\
+  \texttt{models\_registry/anomaly/} & Artefactos serializados del modelo (modelo, \textit{scaler}, columnas, metadatos) \\
+  \texttt{notebooks/} & Entrenamiento (\texttt{04\_model\_training.ipynb}), EDA y generación del dataset \\
+  \texttt{datasets/} & Datos de entrenamiento (dataset sintético) \\
+  \texttt{scripts/} & Registro del modelo en MLflow (\texttt{register\_anomaly\_model.py}) \\
+  \texttt{alembic/} & Migraciones de base de datos \\
+  \texttt{tests/} & Pruebas automatizadas (unitarias e integración) \\
+  \texttt{infrastructure/docker/} & \texttt{Dockerfile} por servicio (API, MLflow, \textit{batch}) \\
+  \texttt{compose.yml} & Orquestación de servicios \\
+  \texttt{README.md} & Instalación y ejecución \\
+  \bottomrule
+\end{tabular}
+
+\subsection{Arranque del servicio}
+
+En producción, el servicio se despliega de forma automatizada mediante un flujo
+de GitHub Actions (\texttt{deploy.yml}) que sincroniza el código al servidor y
+levanta los contenedores. El arranque del microservicio de IA es
+\textbf{escalonado}: primero se levanta MLflow, después se registra el modelo de
+forma idempotente y, por último, se inicia el resto de los servicios. El
+siguiente fragmento corresponde al bloque de despliegue de \texttt{vivia-ai}:
+
+\begin{lstlisting}[style=bashstyle]
+# ── 3. vivia-ai (Python AI) ──────────────────────────────────────
+# Credencial del service account de GCS (artefactos de MLflow).
+mkdir -p ~/secrets
+echo '${{ secrets.GCS_SA_JSON }}' > ~/secrets/gcs-vivia.json
+chmod 600 ~/secrets/gcs-vivia.json
+
+cat > ~/vps/vivia-ai/.env << EOF
+RABBITMQ_HOST=vivia-rabbitmq
+RABBITMQ_PORT=5672
+RABBITMQ_USER=${{ secrets.RABBITMQ_USER }}
+RABBITMQ_PASSWORD=${{ secrets.RABBITMQ_PASSWORD }}
+RABBITMQ_VHOST=${{ secrets.RABBITMQ_VHOST }}
+INTERNAL_API_KEY=${{ secrets.INTERNAL_API_KEY }}
+EXTERNAL_SERVICE_URL=http://vivia-app:8080
+MLFLOW_ARTIFACT_ROOT=${{ secrets.MLFLOW_ARTIFACT_ROOT }}
+MODELS_REGISTRY_HOST=${{ secrets.MODELS_REGISTRY_HOST }}
+MLFLOW_TRACKING_URI=http://mlflow:5000
+POSTGRES_USER=${{ secrets.AI_DB_USER }}
+POSTGRES_PASSWORD=${{ secrets.AI_DB_PASSWORD }}
+POSTGRES_DB=${{ secrets.AI_DB_NAME }}
+DATABASE_URL=postgresql+asyncpg://${{ secrets.AI_DB_USER }}:${{ secrets.AI_DB_PASSWORD }}@${{ secrets.AI_DB_HOST }}:5432/${{ secrets.AI_DB_NAME }}?ssl=require
+MLFLOW_BACKEND_STORE_URI=postgresql://${{ secrets.AI_DB_USER }}:${{ secrets.AI_DB_PASSWORD }}@${{ secrets.AI_DB_HOST }}:5432/${{ secrets.AI_DB_NAME }}?sslmode=require
+GCS_CREDENTIALS_HOST=$HOME/secrets/gcs-vivia.json
+EOF
+
+cd ~/vps/vivia-ai
+docker compose down --remove-orphans
+docker compose build --no-cache
+
+# Arranque escalonado: MLflow primero (la BD ya es RDS, externa),
+# registramos el modelo (idempotente) y por ultimo levantamos todo.
+docker compose up -d mlflow
+docker compose run --rm anomaly-api python -m scripts.register_anomaly_model
+docker compose up -d
+docker image prune -f
+\end{lstlisting}
+
+Para ejecución local de desarrollo, el servicio se levanta con \textit{uvicorn}
+tras instalar las dependencias con Poetry; la aplicación FastAPI se define en
+\texttt{src/anomaly\_detector\_api/main.py}.
+
+\subsection{Inicialización (\textit{lifespan})}
+
+Al arrancar, la aplicación FastAPI ejecuta un \textit{lifespan} que prepara las
+dependencias del servicio una sola vez: construye el \textit{engine} de base de
+datos y el repositorio de inferencias, carga el modelo desde el Model Registry de
+MLflow y lanza el consumidor de la cola de RabbitMQ en un hilo en segundo plano.
+
+\begin{lstlisting}[style=pythonstyle]
+# src/anomaly_detector_api/main.py (extracto)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Base de datos: engine + repositorio de inferencias
+    engine          = build_engine()
+    session_factory = build_session_factory(engine)
+    await init_models(engine)
+    app.state.inference_repository = InferenceRepository(session_factory)
+
+    # Modelo desde el Model Registry de MLflow (una sola carga)
+    model = AnomalyModel(settings.anomaly_model_name, settings.anomaly_model_stage)
+    model.load()
+    app.state.anomaly_model = model
+
+    # Consumidor de la cola de RabbitMQ en hilo demonio
+    consumer = AnomalyQueueConsumer(model=model)
+    thread   = threading.Thread(target=consumer.run, daemon=True,
+                                name="anomaly-queue-consumer")
+    thread.start()
+    yield
+    consumer.stop()
+    await engine.dispose()
+\end{lstlisting}
+
+\subsection{Fragmento representativo}
+
+El núcleo de la inferencia reside en el caso de uso
+\texttt{AnalyzePropertyUseCase} (\texttt{src/anomaly\_detector\_api/usecases/}
+\texttt{analyze\_property.py}): construye las \textit{features}, ejecuta la
+predicción del modelo en un \textit{thread pool} (para no bloquear el
+\textit{event loop}), persiste la inferencia y notifica el veredicto al servicio
+externo.
+
+\begin{lstlisting}[style=pythonstyle]
+# src/anomaly_detector_api/usecases/analyze_property.py (extracto)
+async def execute(self, request: PropertyRequest) -> dict:
+    loop     = asyncio.get_running_loop()
+    features = build_features(request.draft, self._model.feature_cols)
+
+    # predict() es sincrono (numpy/sklearn) -> thread pool
+    is_anomaly, score = await loop.run_in_executor(
+        None, self._model.predict, features
+    )
+
+    approved = not is_anomaly
+    reason = (
+        "Propiedad aprobada tras analisis de anomalias."
+        if approved
+        else f"Propiedad rechazada: anomalia detectada (score={score:.4f})."
+    )
+
+    # La inferencia se persiste ANTES del webhook: el registro no debe
+    # depender del exito de la notificacion al servicio externo.
+    await self._persist(request, is_anomaly, score, approved, reason, features)
+
+    payload = AnalysisPayload(draft_id=request.draft.id,
+                              approved=approved, reason=reason)
+    status_code = await self._post_result(payload)   # webhook con reintentos
+    return self._response(payload, status_code)
+\end{lstlisting}
+
+\subsection{Manejo de errores}
+
+\begin{itemize}
+  \item \texttt{403}: cabecera \texttt{X-Internal-API-Key} ausente o inválida
+  (acceso restringido a clientes internos).
+  \item \texttt{422}: entrada inválida (campos faltantes o tipos incorrectos),
+  con detalle estructurado en JSON generado por Pydantic.
+  \item \texttt{404}: consulta de una inferencia inexistente por su identificador.
+  \item \texttt{500}: fallo interno; se registra en \textit{logs} sin filtrar
+  datos sensibles.
+  \item \textbf{Tolerancia a fallos del webhook}: la notificación al servicio
+  externo reintenta con \textit{backoff} (\texttt{[2, 5, 10]} s) y, ante un fallo
+  persistente, envía un resultado de respaldo (\texttt{approved=false}) para que
+  la publicación se revise manualmente; un fallo de persistencia, por su parte,
+  no aborta el análisis.
+\end{itemize}
+
+\subsection{Dependencias principales}
+
+\begin{tabular}{@{}ll p{6.0cm}@{}}
+  \toprule
+  Librería & Versión & Rol \\
+  \midrule
+  \texttt{fastapi}        & \textasciicircum0.109.0 & Framework web ASGI \\
+  \texttt{uvicorn}        & \textasciicircum0.27.0  & Servidor ASGI \\
+  \texttt{pydantic}       & \textasciicircum2.5.3   & Validación de esquemas \\
+  \texttt{pydantic-settings} & \textasciicircum2.1.0 & Configuración tipada \\
+  \texttt{mlflow}         & \textasciicircum2.10.0  & Model Registry y empaquetado \texttt{pyfunc} \\
+  \texttt{scikit-learn}   & (vía MLflow)            & \textit{Isolation Forest} y \texttt{StandardScaler} \\
+  \texttt{google-cloud-storage} & \textasciicircum2.14.0 & Artefactos de modelos en GCS \\
+  \texttt{pika}           & \textasciicircum1.3.2   & Cliente AMQP de RabbitMQ \\
+  \bottomrule
+\end{tabular}
+
+\noindent Dependencias de desarrollo: \texttt{pytest}, \texttt{pytest-asyncio},
+\texttt{pytest-cov}, \texttt{black}, \texttt{ruff} y \texttt{jupyter}. La gestión
+de dependencias se realiza con Poetry (\texttt{pyproject.toml}).

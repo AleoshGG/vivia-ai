@@ -17,5 +17,8 @@ jobs:
               owner: context.repo.owner,
               repo: 'vivia-infrastructure',
               workflow_id: 'deploy.yml',
-              ref: 'main'
+              ref: 'main',
+              inputs: {
+                service: 'vivia-ai'
+              }
             })
