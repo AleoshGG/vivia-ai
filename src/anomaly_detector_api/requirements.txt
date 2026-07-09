@@ -11,4 +11,6 @@ pandas>=2.2.0
 sqlalchemy[asyncio]>=2.0.0
 asyncpg>=0.29.0
 alembic>=1.13.0
+# Driver síncrono requerido por Alembic (ver alembic/env.py::_sync_url).
+psycopg2-binary>=2.9.0
 mlflow>=2.10.0,<3
