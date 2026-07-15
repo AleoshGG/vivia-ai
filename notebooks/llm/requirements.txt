@@ -1,0 +1,13 @@
+# Dependencias para los notebooks de experimentación del LLM local.
+# Instalar dentro de notebooks/.venv:
+#   pip install -r llm/requirements.txt
+#
+# Nota: llama-cpp-python compila llama.cpp con CMake al instalarse (requiere
+# gcc/g++ y cmake). Si la compilación falla, usar los wheels precompilados CPU:
+#   pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
+llama-cpp-python>=0.3.0
+huggingface_hub>=0.23.0
+pandas
+psutil
+networkx>=3.0
+matplotlib

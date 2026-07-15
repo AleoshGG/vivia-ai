@@ -1,0 +1,177 @@
+[
+  {
+    "draft": {
+      "id": "draft-001",
+      "lessorId": "lessor-001",
+      "propertyType": { "id": "pt-01", "name": "CASA" },
+      "address": {
+        "id": "addr-001",
+        "neighborhoodId": "nb-001",
+        "neighborhoodName": "Prudencio Moscoso",
+        "postalCode": "29217",
+        "street": "San Juan",
+        "exteriorNumber": "123",
+        "interiorNumber": null
+      },
+      "availableToRent": true,
+      "areaM2": 200,
+      "bedrooms": 4,
+      "bathrooms": 3,
+      "parkingSpaces": 2,
+      "constructionYear": 2025,
+      "condominium": false,
+      "listedPrice": 2000000,
+      "amenities": ["Terraza", "Jardín", "GYM"]
+    }
+  },
+  {
+    "draft": {
+      "id": "draft-002",
+      "lessorId": "lessor-002",
+      "propertyType": { "id": "pt-02", "name": "DEPARTAMENTO" },
+      "address": {
+        "id": "addr-002",
+        "neighborhoodId": "nb-002",
+        "neighborhoodName": "El Cerrillo",
+        "postalCode": "29220",
+        "street": "Real de Guadalupe",
+        "exteriorNumber": "45",
+        "interiorNumber": "3B"
+      },
+      "availableToRent": false,
+      "areaM2": 85,
+      "bedrooms": 2,
+      "bathrooms": 1,
+      "parkingSpaces": 1,
+      "constructionYear": 2010,
+      "condominium": true,
+      "listedPrice": 1450000,
+      "amenities": ["Alberca", "Seguridad 24h", "Elevador"]
+    }
+  },
+  {
+    "draft": {
+      "id": "draft-003",
+      "lessorId": "lessor-003",
+      "propertyType": { "id": "pt-01", "name": "CASA" },
+      "address": {
+        "id": "addr-003",
+        "neighborhoodId": "nb-003",
+        "neighborhoodName": "Barrio de Guadalupe",
+        "postalCode": "29230",
+        "street": "Francisco Madero",
+        "exteriorNumber": "210",
+        "interiorNumber": null
+      },
+      "availableToRent": false,
+      "areaM2": 320,
+      "bedrooms": 5,
+      "bathrooms": 3,
+      "parkingSpaces": 2,
+      "constructionYear": 1965,
+      "condominium": false,
+      "listedPrice": 5200000,
+      "amenities": ["Patio", "Cuarto de servicio"]
+    }
+  },
+  {
+    "draft": {
+      "id": "draft-004",
+      "lessorId": "lessor-004",
+      "propertyType": { "id": "pt-02", "name": "DEPARTAMENTO" },
+      "address": {
+        "id": "addr-004",
+        "neighborhoodId": "nb-004",
+        "neighborhoodName": "La Isla",
+        "postalCode": "29240",
+        "street": "Diagonal El Bosque",
+        "exteriorNumber": "8",
+        "interiorNumber": "102"
+      },
+      "availableToRent": true,
+      "areaM2": 45,
+      "bedrooms": 1,
+      "bathrooms": 1,
+      "parkingSpaces": 0,
+      "constructionYear": 2018,
+      "condominium": true,
+      "listedPrice": 7500,
+      "amenities": ["Roof Garden", "Área de lavado"]
+    }
+  },
+  {
+    "draft": {
+      "id": "draft-005",
+      "lessorId": "lessor-005",
+      "propertyType": { "id": "pt-01", "name": "CASA" },
+      "address": {
+        "id": "addr-005",
+        "neighborhoodId": "nb-005",
+        "neighborhoodName": "31 de Marzo",
+        "postalCode": "29236",
+        "street": "Insurgentes",
+        "exteriorNumber": "77",
+        "interiorNumber": null
+      },
+      "availableToRent": true,
+      "areaM2": 120,
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "parkingSpaces": 1,
+      "constructionYear": 1998,
+      "condominium": false,
+      "listedPrice": 12000,
+      "amenities": []
+    }
+  },
+  {
+    "draft": {
+      "id": "draft-006",
+      "lessorId": "lessor-006",
+      "propertyType": { "id": "pt-02", "name": "DEPARTAMENTO" },
+      "address": {
+        "id": "addr-006",
+        "neighborhoodId": "nb-006",
+        "neighborhoodName": "Real del Monte",
+        "postalCode": "29249",
+        "street": "Cerrada del Sumidero",
+        "exteriorNumber": "15",
+        "interiorNumber": "501"
+      },
+      "availableToRent": false,
+      "areaM2": 140,
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "parkingSpaces": 2,
+      "constructionYear": 2023,
+      "condominium": true,
+      "listedPrice": 3900000,
+      "amenities": ["Sala de cine", "Ludoteca", "Terraza"]
+    }
+  },
+  {
+    "draft": {
+      "id": "draft-007",
+      "lessorId": "lessor-007",
+      "propertyType": { "id": "pt-03", "name": "LOFT" },
+      "address": {
+        "id": "addr-007",
+        "neighborhoodId": "nb-007",
+        "neighborhoodName": "Centro",
+        "postalCode": "29200",
+        "street": "Miguel Hidalgo",
+        "exteriorNumber": "31",
+        "interiorNumber": "A"
+      },
+      "availableToRent": true,
+      "areaM2": 60,
+      "bedrooms": 1,
+      "bathrooms": 1,
+      "parkingSpaces": 0,
+      "constructionYear": 2021,
+      "condominium": false,
+      "listedPrice": 9500,
+      "amenities": ["Doble altura", "Área de lavado"]
+    }
+  }
+]

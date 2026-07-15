@@ -1,0 +1,250 @@
+<title>Grafo de inferencia — Vivia</title>
+<style>
+:root{
+  --bg:#FAF9F6; --panel:#FFFFFF; --ink:#22303A; --muted:#687885; --line:#E4E1D8;
+  --evoca:#3E7CB1; --prior:#8E63B5; --sugiere:#3F8F63; --bloquea:#C24A3F;
+  --tema:#B67A1F; --accent:#0F766E; --chip:#EFEDE6; --hi:#FFF3D6;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#14191F; --panel:#1C232B; --ink:#E7ECF0; --muted:#94A2AE; --line:#2B3540;
+  --evoca:#6FA8DC; --prior:#B394D9; --sugiere:#6FBF92; --bloquea:#E07B6F;
+  --tema:#D9A24A; --accent:#3AA99F; --chip:#242E38; --hi:#3A3320;
+}}
+:root[data-theme="light"]{
+  --bg:#FAF9F6; --panel:#FFFFFF; --ink:#22303A; --muted:#687885; --line:#E4E1D8;
+  --evoca:#3E7CB1; --prior:#8E63B5; --sugiere:#3F8F63; --bloquea:#C24A3F;
+  --tema:#B67A1F; --accent:#0F766E; --chip:#EFEDE6; --hi:#FFF3D6;
+}
+:root[data-theme="dark"]{
+  --bg:#14191F; --panel:#1C232B; --ink:#E7ECF0; --muted:#94A2AE; --line:#2B3540;
+  --evoca:#6FA8DC; --prior:#B394D9; --sugiere:#6FBF92; --bloquea:#E07B6F;
+  --tema:#D9A24A; --accent:#3AA99F; --chip:#242E38; --hi:#3A3320;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;margin:0;padding:20px}
+header{max-width:1500px;margin:0 auto 14px}
+h1{font-size:20px;font-weight:650;margin:0 0 2px}
+header p{color:var(--muted);margin:0;max-width:72ch}
+.top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0 10px}
+select{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font:inherit}
+button.clear{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 10px;font:inherit;cursor:pointer}
+button.clear:hover{color:var(--ink)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:12px;align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{display:inline-block;width:22px;height:0;border-top:3px solid;border-radius:2px}
+.legend i.blq{border-top-style:dashed}
+.wrap{max-width:1500px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px}
+@media (max-width:1000px){.wrap{grid-template-columns:1fr}}
+.graphbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:auto;max-height:86vh}
+svg{display:block}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;align-self:start;position:sticky;top:14px;max-height:86vh;overflow:auto}
+.panel h2{font-size:11px;font-weight:650;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 8px}
+.panel .empty{color:var(--muted)}
+.dec{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.dec b{font-weight:650}
+.dec .k{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.07em}
+.score{display:grid;grid-template-columns:150px 1fr 38px;gap:8px;align-items:center;margin:3px 0;font-size:12.5px}
+.score .bar{height:7px;border-radius:4px;background:var(--chip);overflow:hidden}
+.score .bar i{display:block;height:100%;background:var(--tema);border-radius:4px}
+.score .num{font-family:ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;text-align:right;color:var(--muted)}
+.score.win .num,.score.win .name{color:var(--ink);font-weight:650}
+.score.blk .name{color:var(--bloquea);text-decoration:line-through}
+.score .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.why{color:var(--muted);font-size:12px;margin:6px 0 0;border-left:2px solid var(--bloquea);padding-left:8px}
+.node rect{fill:var(--panel);stroke:var(--line);rx:7}
+.node text{fill:var(--ink);font-size:11.5px}
+.node.col1 rect{stroke:var(--tema)}
+.node.col2 rect{stroke:var(--sugiere)}
+.node.activo rect{fill:var(--hi);stroke:var(--tema);stroke-width:1.6}
+.node.dim{opacity:.18}
+.grp{fill:var(--muted);font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:600}
+path.e{fill:none;opacity:.42}
+path.e.evoca{stroke:var(--evoca)} path.e.prior{stroke:var(--prior)}
+path.e.sugiere{stroke:var(--sugiere)} path.e.bloquea{stroke:var(--bloquea);stroke-dasharray:6 5}
+path.e.dim{opacity:.05} path.e.hi{opacity:.95}
+footer{max-width:1500px;margin:10px auto 0;color:var(--muted);font-size:12px}
+@media (prefers-reduced-motion: no-preference){path.e,.node{transition:opacity .15s}}
+</style>
+<header>
+  <h1>Grafo de inferencia — Vivia</h1>
+  <p>El enrutador editorial: las fuentes del draft activan temas y audiencias por aristas ponderadas
+  (grosor = peso 0.3 / 0.6 / 0.9); los bloqueos (rojo punteado) son calles en sentido contrario.
+  Pasa el cursor sobre un nodo para aislar sus rutas, o simula un draft para ver la decisión completa.</p>
+  <div class="top">
+    <select id="draftSel"><option value="">— Simular draft… —</option></select>
+    <button class="clear" id="btnClear">Limpiar</button>
+    <div class="legend">
+      <span><i style="border-color:var(--evoca)"></i>evoca (amenidad→tema)</span>
+      <span><i style="border-color:var(--prior)"></i>prior (tipo/operación/bucket→tema)</span>
+      <span><i style="border-color:var(--sugiere)"></i>sugiere (→audiencia)</span>
+      <span><i class="blq" style="border-color:var(--bloquea)"></i>bloquea (−10)</span>
+    </div>
+  </div>
+</header>
+<div class="wrap">
+  <div class="graphbox"><svg id="g" role="img" aria-label="Grafo de inferencia"></svg></div>
+  <aside class="panel" id="panel"><h2>Decisión del grafo</h2>
+    <p class="empty">Selecciona un draft para propagar la inferencia y ver la traza de decisión.</p>
+  </aside>
+</div>
+<footer>Fuente: notebooks/graph-ai/datasets/ · k=2 temas · umbral 0.5 · desempate por arista contribuyente de mayor peso · metodología en init.md</footer>
+<script>
+const D = {"nodes": [{"id": "op:RENTA", "label": "RENTA", "col": 0, "grupo": "Operación", "detalle": "hogar disponible para renta; enfatiza la vida diaria y la facilidad de instalarse"}, {"id": "op:VENTA", "label": "VENTA", "col": 0, "grupo": "Operación", "detalle": "propiedad en venta; enfatiza permanencia y valor de largo plazo"}, {"id": "tipo:Casa", "label": "Casa", "col": 0, "grupo": "Tipo de propiedad", "detalle": "espacios, independencia y vida cotidiana"}, {"id": "tipo:Departamento", "label": "Departamento", "col": 0, "grupo": "Tipo de propiedad", "detalle": "practicidad, vida en conjunto y estilo de vida"}, {"id": "tipo:Terreno", "label": "Terreno", "col": 0, "grupo": "Tipo de propiedad", "detalle": "potencial y posibilidades de proyecto"}, {"id": "tipo:Local Comercial", "label": "Local Comercial", "col": 0, "grupo": "Tipo de propiedad", "detalle": "funcionalidad y potencial para atender clientes"}, {"id": "tipo:Oficina", "label": "Oficina", "col": 0, "grupo": "Tipo de propiedad", "detalle": "operación diaria, imagen profesional y funcionalidad"}, {"id": "tipo:Bodega", "label": "Bodega", "col": 0, "grupo": "Tipo de propiedad", "detalle": "capacidad de almacenaje y funcionamiento operativo"}, {"id": "bk:a_estrenar", "label": "a_estrenar", "col": 0, "grupo": "Atributos (buckets)", "detalle": "antiguedad <= 1 — construida este año o el anterior"}, {"id": "bk:construccion_reciente", "label": "construccion_reciente", "col": 0, "grupo": "Atributos (buckets)", "detalle": "1 < antiguedad <= 10 — construcción de la última década"}, {"id": "bk:con_historia", "label": "con_historia", "col": 0, "grupo": "Atributos (buckets)", "detalle": "antiguedad > 30 — más de 30 años; nombrar como carácter sin afirmar estado o remodelaciones"}, {"id": "bk:area_amplia", "label": "area_amplia", "col": 0, "grupo": "Atributos (buckets)", "detalle": "areaM2 >= 180 — umbral por validar con percentiles del mercado local"}, {"id": "bk:area_compacta", "label": "area_compacta", "col": 0, "grupo": "Atributos (buckets)", "detalle": "areaM2 <= 50 — describir como eficiente; nunca como amplia"}, {"id": "bk:rec_4_mas", "label": "rec_4_mas", "col": 0, "grupo": "Atributos (buckets)", "detalle": "bedrooms >= 4"}, {"id": "bk:rec_2_3", "label": "rec_2_3", "col": 0, "grupo": "Atributos (buckets)", "detalle": "2 <= bedrooms <= 3"}, {"id": "bk:rec_1", "label": "rec_1", "col": 0, "grupo": "Atributos (buckets)", "detalle": "bedrooms == 1"}, {"id": "bk:en_condominio", "label": "en_condominio", "col": 0, "grupo": "Atributos (buckets)", "detalle": "condominium == true"}, {"id": "bk:sin_estacionamiento", "label": "sin_estacionamiento", "col": 0, "grupo": "Atributos (buckets)", "detalle": "parkingSpaces == 0 — no mencionar estacionamientos en el anuncio"}, {"id": "am:alberca", "label": "Alberca", "col": 0, "grupo": "Amenidades", "detalle": "aliases: alberca|piscina|pool"}, {"id": "am:gimnasio", "label": "Gimnasio", "col": 0, "grupo": "Amenidades", "detalle": "aliases: gimnasio|gym|fitness"}, {"id": "am:roof_garden", "label": "Roof Garden", "col": 0, "grupo": "Amenidades", "detalle": "aliases: roof garden|roofgarden|roof-garden"}, {"id": "am:seguridad_24h", "label": "Seguridad 24h", "col": 0, "grupo": "Amenidades", "detalle": "aliases: seguridad 24h|seguridad|vigilancia|caseta de vigilancia"}, {"id": "am:estacionamiento_techado", "label": "Estacionamiento Techado", "col": 0, "grupo": "Amenidades", "detalle": "aliases: estacionamiento techado|cochera techada|garage techado"}, {"id": "am:area_juegos_infantiles", "label": "Área de Juegos Infantiles", "col": 0, "grupo": "Amenidades", "detalle": "aliases: área de juegos infantiles|juegos infantiles|area de juegos"}, {"id": "am:jardin", "label": "Jardín", "col": 0, "grupo": "Amenidades", "detalle": "aliases: jardín|jardin|áreas verdes|garden"}, {"id": "am:terraza", "label": "Terraza", "col": 0, "grupo": "Amenidades", "detalle": "aliases: terraza"}, {"id": "am:salon_eventos", "label": "Salón de Eventos", "col": 0, "grupo": "Amenidades", "detalle": "aliases: salón de eventos|salon de eventos|salón de usos múltiples"}, {"id": "am:cancha_deportiva", "label": "Cancha Deportiva", "col": 0, "grupo": "Amenidades", "detalle": "aliases: cancha deportiva|cancha"}, {"id": "am:cctv", "label": "Circuito Cerrado (CCTV)", "col": 0, "grupo": "Amenidades", "detalle": "aliases: circuito cerrado (cctv)|circuito cerrado|cctv|cámaras de seguridad|camaras"}, {"id": "am:acceso_controlado", "label": "Acceso Controlado", "col": 0, "grupo": "Amenidades", "detalle": "aliases: acceso controlado|caseta de acceso"}, {"id": "am:elevador", "label": "Elevador", "col": 0, "grupo": "Amenidades", "detalle": "aliases: elevador|ascensor"}, {"id": "am:area_bbq", "label": "Área de BBQ", "col": 0, "grupo": "Amenidades", "detalle": "aliases: área de bbq|area de bbq|bbq|asador|parrilla|área de asadores"}, {"id": "am:pet_friendly", "label": "Pet Friendly", "col": 0, "grupo": "Amenidades", "detalle": "aliases: pet friendly|petfriendly|se aceptan mascotas|mascotas"}, {"id": "am:cuarto_servicio", "label": "Cuarto de Servicio", "col": 0, "grupo": "Amenidades", "detalle": "aliases: cuarto de servicio"}, {"id": "am:cocina_integral", "label": "Cocina Integral", "col": 0, "grupo": "Amenidades", "detalle": "aliases: cocina integral|cocina equipada"}, {"id": "am:closets", "label": "Closets", "col": 0, "grupo": "Amenidades", "detalle": "aliases: closets|clósets|armarios empotrados"}, {"id": "am:calentador_agua", "label": "Calentador de Agua", "col": 0, "grupo": "Amenidades", "detalle": "aliases: calentador de agua|boiler|calentador solar"}, {"id": "am:aire_acondicionado", "label": "Aire Acondicionado", "col": 0, "grupo": "Amenidades", "detalle": "aliases: aire acondicionado|a/c|clima|minisplit"}, {"id": "am:amueblado", "label": "Amueblado", "col": 0, "grupo": "Amenidades", "detalle": "aliases: amueblado|amueblada"}, {"id": "am:semi_amueblado", "label": "Semi-Amueblado", "col": 0, "grupo": "Amenidades", "detalle": "aliases: semi-amueblado|semiamueblado|semi amueblado"}, {"id": "tema:vida_al_aire_libre", "label": "vida al aire libre", "col": 1, "grupo": "Temas", "detalle": "“espacios para disfrutar el aire libre sin salir de casa” / “momentos al exterior en el día a día”"}, {"id": "tema:convivencia_familiar", "label": "convivencia familiar", "col": 1, "grupo": "Temas", "detalle": "“pensada para la convivencia en familia” / “espacios donde cada quien tiene su lugar”"}, {"id": "tema:bienestar", "label": "bienestar", "col": 1, "grupo": "Temas", "detalle": "“facilita una rutina activa y saludable” / “bienestar sin salir del hogar”"}, {"id": "tema:practicidad", "label": "practicidad", "col": 1, "grupo": "Temas", "detalle": "“resuelve el día a día con comodidad” / “una distribución que aprovecha cada metro”"}, {"id": "tema:tranquilidad", "label": "tranquilidad", "col": 1, "grupo": "Temas", "detalle": "“un ritmo de vida tranquilo” / “privacidad para descansar”"}, {"id": "tema:seguridad", "label": "seguridad", "col": 1, "grupo": "Temas", "detalle": "“acceso controlado para mayor tranquilidad” / “un entorno cuidado y vigilado”"}, {"id": "tema:estilo_moderno", "label": "estilo moderno", "col": 1, "grupo": "Temas", "detalle": "“diseño actual con personalidad” / “ambientes luminosos y contemporáneos”"}, {"id": "tema:patrimonio", "label": "patrimonio", "col": 1, "grupo": "Temas", "detalle": "“un patrimonio que se disfruta todos los días” / “una decisión pensada en el largo plazo”"}, {"id": "tema:flexibilidad", "label": "flexibilidad", "col": 1, "grupo": "Temas", "detalle": "“lista para habitarse sin complicaciones” / “ideal para instalarse pronto”"}, {"id": "tema:confort_interior", "label": "confort interior", "col": 1, "grupo": "Temas", "detalle": "“interiores cómodos en cualquier época del año” / “equipada para la comodidad diaria”"}, {"id": "tema:funcionalidad_comercial", "label": "funcionalidad comercial", "col": 1, "grupo": "Temas", "detalle": "“un espacio listo para operar” / “pensado para la actividad diaria del negocio”"}, {"id": "aud:familia_grande", "label": "familia grande", "col": 2, "grupo": "Audiencias", "detalle": "familias que necesitan espacio para todos"}, {"id": "aud:familia_pareja", "label": "familia pareja", "col": 2, "grupo": "Audiencias", "detalle": "parejas o familias que van creciendo"}, {"id": "aud:profesionista", "label": "profesionista", "col": 2, "grupo": "Audiencias", "detalle": "profesionistas que buscan practicidad"}, {"id": "aud:persona_sola", "label": "persona sola", "col": 2, "grupo": "Audiencias", "detalle": "quien busca un espacio propio y eficiente"}, {"id": "aud:negocio_emprendedor", "label": "negocio emprendedor", "col": 2, "grupo": "Audiencias", "detalle": "quien inicia o hace crecer su propio negocio"}, {"id": "aud:empresa", "label": "empresa", "col": 2, "grupo": "Audiencias", "detalle": "empresas que buscan un espacio operativo"}, {"id": "aud:inversionista", "label": "inversionista", "col": 2, "grupo": "Audiencias", "detalle": "quien busca desarrollar un proyecto propio"}], "edges": [{"s": "am:alberca", "t": "tema:convivencia_familiar", "w": 0.6, "k": "evoca"}, {"s": "am:alberca", "t": "tema:bienestar", "w": 0.9, "k": "evoca"}, {"s": "am:gimnasio", "t": "tema:bienestar", "w": 0.9, "k": "evoca"}, {"s": "am:roof_garden", "t": "tema:vida_al_aire_libre", "w": 0.9, "k": "evoca"}, {"s": "am:roof_garden", "t": "tema:estilo_moderno", "w": 0.6, "k": "evoca"}, {"s": "am:seguridad_24h", "t": "tema:tranquilidad", "w": 0.3, "k": "evoca"}, {"s": "am:seguridad_24h", "t": "tema:seguridad", "w": 0.9, "k": "evoca"}, {"s": "am:estacionamiento_techado", "t": "tema:practicidad", "w": 0.6, "k": "evoca"}, {"s": "am:estacionamiento_techado", "t": "tema:funcionalidad_comercial", "w": 0.3, "k": "evoca"}, {"s": "am:area_juegos_infantiles", "t": "tema:convivencia_familiar", "w": 0.9, "k": "evoca"}, {"s": "am:jardin", "t": "tema:vida_al_aire_libre", "w": 0.9, "k": "evoca"}, {"s": "am:jardin", "t": "tema:convivencia_familiar", "w": 0.6, "k": "evoca"}, {"s": "am:jardin", "t": "tema:tranquilidad", "w": 0.3, "k": "evoca"}, {"s": "am:terraza", "t": "tema:vida_al_aire_libre", "w": 0.9, "k": "evoca"}, {"s": "am:terraza", "t": "tema:estilo_moderno", "w": 0.3, "k": "evoca"}, {"s": "am:salon_eventos", "t": "tema:convivencia_familiar", "w": 0.6, "k": "evoca"}, {"s": "am:salon_eventos", "t": "tema:estilo_moderno", "w": 0.3, "k": "evoca"}, {"s": "am:cancha_deportiva", "t": "tema:convivencia_familiar", "w": 0.3, "k": "evoca"}, {"s": "am:cancha_deportiva", "t": "tema:bienestar", "w": 0.9, "k": "evoca"}, {"s": "am:cctv", "t": "tema:seguridad", "w": 0.9, "k": "evoca"}, {"s": "am:cctv", "t": "tema:funcionalidad_comercial", "w": 0.3, "k": "evoca"}, {"s": "am:acceso_controlado", "t": "tema:tranquilidad", "w": 0.3, "k": "evoca"}, {"s": "am:acceso_controlado", "t": "tema:seguridad", "w": 0.9, "k": "evoca"}, {"s": "am:elevador", "t": "tema:practicidad", "w": 0.6, "k": "evoca"}, {"s": "am:area_bbq", "t": "tema:vida_al_aire_libre", "w": 0.6, "k": "evoca"}, {"s": "am:area_bbq", "t": "tema:convivencia_familiar", "w": 0.9, "k": "evoca"}, {"s": "am:pet_friendly", "t": "tema:vida_al_aire_libre", "w": 0.3, "k": "evoca"}, {"s": "am:pet_friendly", "t": "tema:convivencia_familiar", "w": 0.6, "k": "evoca"}, {"s": "am:cuarto_servicio", "t": "tema:practicidad", "w": 0.6, "k": "evoca"}, {"s": "am:cocina_integral", "t": "tema:practicidad", "w": 0.9, "k": "evoca"}, {"s": "am:cocina_integral", "t": "tema:confort_interior", "w": 0.3, "k": "evoca"}, {"s": "am:closets", "t": "tema:practicidad", "w": 0.6, "k": "evoca"}, {"s": "am:closets", "t": "tema:confort_interior", "w": 0.3, "k": "evoca"}, {"s": "am:calentador_agua", "t": "tema:practicidad", "w": 0.3, "k": "evoca"}, {"s": "am:calentador_agua", "t": "tema:confort_interior", "w": 0.6, "k": "evoca"}, {"s": "am:aire_acondicionado", "t": "tema:confort_interior", "w": 0.9, "k": "evoca"}, {"s": "am:aire_acondicionado", "t": "tema:funcionalidad_comercial", "w": 0.3, "k": "evoca"}, {"s": "am:amueblado", "t": "tema:flexibilidad", "w": 0.9, "k": "evoca"}, {"s": "am:amueblado", "t": "tema:confort_interior", "w": 0.6, "k": "evoca"}, {"s": "am:semi_amueblado", "t": "tema:flexibilidad", "w": 0.6, "k": "evoca"}, {"s": "am:semi_amueblado", "t": "tema:confort_interior", "w": 0.3, "k": "evoca"}, {"s": "tipo:Casa", "t": "tema:convivencia_familiar", "w": 0.8, "k": "prior"}, {"s": "tipo:Casa", "t": "tema:tranquilidad", "w": 0.6, "k": "prior"}, {"s": "tipo:Departamento", "t": "tema:practicidad", "w": 0.8, "k": "prior"}, {"s": "tipo:Departamento", "t": "tema:estilo_moderno", "w": 0.6, "k": "prior"}, {"s": "tipo:Terreno", "t": "tema:patrimonio", "w": 0.8, "k": "prior"}, {"s": "tipo:Local Comercial", "t": "tema:funcionalidad_comercial", "w": 0.8, "k": "prior"}, {"s": "tipo:Oficina", "t": "tema:funcionalidad_comercial", "w": 0.8, "k": "prior"}, {"s": "tipo:Oficina", "t": "tema:practicidad", "w": 0.6, "k": "prior"}, {"s": "tipo:Bodega", "t": "tema:funcionalidad_comercial", "w": 0.8, "k": "prior"}, {"s": "tipo:Bodega", "t": "tema:practicidad", "w": 0.3, "k": "prior"}, {"s": "op:RENTA", "t": "tema:flexibilidad", "w": 0.6, "k": "prior"}, {"s": "op:VENTA", "t": "tema:patrimonio", "w": 0.8, "k": "prior"}, {"s": "bk:a_estrenar", "t": "tema:estilo_moderno", "w": 0.6, "k": "prior"}, {"s": "bk:a_estrenar", "t": "tema:flexibilidad", "w": 0.3, "k": "prior"}, {"s": "bk:con_historia", "t": "tema:tranquilidad", "w": 0.3, "k": "prior"}, {"s": "bk:area_amplia", "t": "tema:convivencia_familiar", "w": 0.3, "k": "prior"}, {"s": "bk:en_condominio", "t": "tema:seguridad", "w": 0.6, "k": "prior"}, {"s": "bk:rec_4_mas", "t": "aud:familia_grande", "w": 0.9, "k": "sugiere"}, {"s": "bk:rec_2_3", "t": "aud:familia_pareja", "w": 0.6, "k": "sugiere"}, {"s": "bk:rec_1", "t": "aud:profesionista", "w": 0.6, "k": "sugiere"}, {"s": "bk:rec_1", "t": "aud:persona_sola", "w": 0.3, "k": "sugiere"}, {"s": "bk:area_amplia", "t": "aud:familia_grande", "w": 0.3, "k": "sugiere"}, {"s": "bk:area_compacta", "t": "aud:persona_sola", "w": 0.6, "k": "sugiere"}, {"s": "tipo:Casa", "t": "aud:familia_grande", "w": 0.3, "k": "sugiere"}, {"s": "op:RENTA", "t": "aud:profesionista", "w": 0.3, "k": "sugiere"}, {"s": "tipo:Local Comercial", "t": "aud:negocio_emprendedor", "w": 0.9, "k": "sugiere"}, {"s": "tipo:Oficina", "t": "aud:empresa", "w": 0.9, "k": "sugiere"}, {"s": "tipo:Oficina", "t": "aud:negocio_emprendedor", "w": 0.6, "k": "sugiere"}, {"s": "tipo:Bodega", "t": "aud:empresa", "w": 0.9, "k": "sugiere"}, {"s": "tipo:Terreno", "t": "aud:inversionista", "w": 0.9, "k": "sugiere"}, {"s": "op:VENTA", "t": "tema:flexibilidad", "w": -10.0, "k": "bloquea", "why": "el discurso de instalarse pronto es de renta; en venta suena a urgencia de cierre"}, {"s": "op:RENTA", "t": "tema:patrimonio", "w": -10.0, "k": "bloquea", "why": "hablar de patrimonio e inversión de largo plazo es discurso de venta"}, {"s": "bk:con_historia", "t": "tema:estilo_moderno", "w": -10.0, "k": "bloquea", "why": "no afirmar modernidad en construcciones de más de 30 años que el draft no sustenta"}, {"s": "bk:area_compacta", "t": "tema:convivencia_familiar", "w": -10.0, "k": "bloquea", "why": "un espacio de 50 m² o menos no se anuncia como convivencia de familia numerosa"}, {"s": "tipo:Local Comercial", "t": "tema:convivencia_familiar", "w": -10.0, "k": "bloquea", "why": "un inmueble comercial no se narra con vida familiar"}, {"s": "tipo:Local Comercial", "t": "tema:tranquilidad", "w": -10.0, "k": "bloquea", "why": "a un local le conviene flujo y actividad; no se vende con quietud"}, {"s": "tipo:Oficina", "t": "tema:convivencia_familiar", "w": -10.0, "k": "bloquea", "why": "un inmueble comercial no se narra con vida familiar"}, {"s": "tipo:Bodega", "t": "tema:convivencia_familiar", "w": -10.0, "k": "bloquea", "why": "un inmueble comercial no se narra con vida familiar"}, {"s": "tipo:Bodega", "t": "tema:estilo_moderno", "w": -10.0, "k": "bloquea", "why": "una bodega se narra por capacidad y operación; no por diseño"}], "alias": {"alberca": "alberca", "piscina": "alberca", "pool": "alberca", "gimnasio": "gimnasio", "gym": "gimnasio", "fitness": "gimnasio", "roof garden": "roof_garden", "roofgarden": "roof_garden", "roof-garden": "roof_garden", "seguridad 24h": "seguridad_24h", "seguridad": "seguridad_24h", "vigilancia": "seguridad_24h", "caseta de vigilancia": "seguridad_24h", "estacionamiento techado": "estacionamiento_techado", "cochera techada": "estacionamiento_techado", "garage techado": "estacionamiento_techado", "área de juegos infantiles": "area_juegos_infantiles", "juegos infantiles": "area_juegos_infantiles", "area de juegos": "area_juegos_infantiles", "jardín": "jardin", "jardin": "jardin", "áreas verdes": "jardin", "garden": "jardin", "terraza": "terraza", "salón de eventos": "salon_eventos", "salon de eventos": "salon_eventos", "salón de usos múltiples": "salon_eventos", "cancha deportiva": "cancha_deportiva", "cancha": "cancha_deportiva", "circuito cerrado (cctv)": "cctv", "circuito cerrado": "cctv", "cctv": "cctv", "cámaras de seguridad": "cctv", "camaras": "cctv", "acceso controlado": "acceso_controlado", "caseta de acceso": "acceso_controlado", "elevador": "elevador", "ascensor": "elevador", "área de bbq": "area_bbq", "area de bbq": "area_bbq", "bbq": "area_bbq", "asador": "area_bbq", "parrilla": "area_bbq", "área de asadores": "area_bbq", "pet friendly": "pet_friendly", "petfriendly": "pet_friendly", "se aceptan mascotas": "pet_friendly", "mascotas": "pet_friendly", "cuarto de servicio": "cuarto_servicio", "cocina integral": "cocina_integral", "cocina equipada": "cocina_integral", "closets": "closets", "clósets": "closets", "armarios empotrados": "closets", "calentador de agua": "calentador_agua", "boiler": "calentador_agua", "calentador solar": "calentador_agua", "aire acondicionado": "aire_acondicionado", "a/c": "aire_acondicionado", "clima": "aire_acondicionado", "minisplit": "aire_acondicionado", "amueblado": "amueblado", "amueblada": "amueblado", "semi-amueblado": "semi_amueblado", "semiamueblado": "semi_amueblado", "semi amueblado": "semi_amueblado"}, "drafts": [{"id": "draft-001", "lessorId": "lessor-001", "propertyType": {"id": "550e8400-e29b-41d4-a716-446655440001", "name": "CASA"}, "address": {"id": "addr-001", "neighborhoodId": "nb-001", "neighborhoodName": "Prudencio Moscoso", "postalCode": "29217", "street": "San Juan", "exteriorNumber": "123", "interiorNumber": null}, "availableToRent": true, "areaM2": 200, "bedrooms": 4, "bathrooms": 3, "parkingSpaces": 2, "constructionYear": 2025, "condominium": false, "listedPrice": 2000000, "amenities": ["Terraza", "Jardín", "GYM"]}, {"id": "draft-002", "lessorId": "lessor-002", "propertyType": {"id": "550e8400-e29b-41d4-a716-446655440002", "name": "DEPARTAMENTO"}, "address": {"id": "addr-002", "neighborhoodId": "nb-002", "neighborhoodName": "El Cerrillo", "postalCode": "29220", "street": "Real de Guadalupe", "exteriorNumber": "45", "interiorNumber": "3B"}, "availableToRent": false, "areaM2": 85, "bedrooms": 2, "bathrooms": 1, "parkingSpaces": 1, "constructionYear": 2010, "condominium": true, "listedPrice": 1450000, "amenities": ["Alberca", "Seguridad 24h", "Elevador"]}, {"id": "draft-003", "lessorId": "lessor-003", "propertyType": {"id": "550e8400-e29b-41d4-a716-446655440001", "name": "CASA"}, "address": {"id": "addr-003", "neighborhoodId": "nb-003", "neighborhoodName": "Barrio de Guadalupe", "postalCode": "29230", "street": "Francisco Madero", "exteriorNumber": "210", "interiorNumber": null}, "availableToRent": false, "areaM2": 320, "bedrooms": 5, "bathrooms": 3, "parkingSpaces": 2, "constructionYear": 1965, "condominium": false, "listedPrice": 5200000, "amenities": ["Cuarto de Servicio", "Cocina Integral"]}, {"id": "draft-004", "lessorId": "lessor-004", "propertyType": {"id": "550e8400-e29b-41d4-a716-446655440002", "name": "DEPARTAMENTO"}, "address": {"id": "addr-004", "neighborhoodId": "nb-004", "neighborhoodName": "La Isla", "postalCode": "29240", "street": "Diagonal El Bosque", "exteriorNumber": "8", "interiorNumber": "102"}, "availableToRent": true, "areaM2": 45, "bedrooms": 1, "bathrooms": 1, "parkingSpaces": 0, "constructionYear": 2018, "condominium": true, "listedPrice": 7500, "amenities": ["Roof Garden", "Closets", "Amueblado"]}, {"id": "draft-005", "lessorId": "lessor-005", "propertyType": {"id": "550e8400-e29b-41d4-a716-446655440001", "name": "CASA"}, "address": {"id": "addr-005", "neighborhoodId": "nb-005", "neighborhoodName": "31 de Marzo", "postalCode": "29236", "street": "Insurgentes", "exteriorNumber": "77", "interiorNumber": null}, "availableToRent": true, "areaM2": 120, "bedrooms": 3, "bathrooms": 2, "parkingSpaces": 1, "constructionYear": 1998, "condominium": false, "listedPrice": 12000, "amenities": []}, {"id": "draft-006", "lessorId": "lessor-006", "propertyType": {"id": "550e8400-e29b-41d4-a716-446655440002", "name": "DEPARTAMENTO"}, "address": {"id": "addr-006", "neighborhoodId": "nb-006", "neighborhoodName": "Real del Monte", "postalCode": "29249", "street": "Cerrada del Sumidero", "exteriorNumber": "15", "interiorNumber": "501"}, "availableToRent": false, "areaM2": 140, "bedrooms": 3, "bathrooms": 2, "parkingSpaces": 2, "constructionYear": 2023, "condominium": true, "listedPrice": 3900000, "amenities": ["Sala de cine", "Área de Juegos Infantiles", "Terraza"]}, {"id": "draft-007", "lessorId": "lessor-007", "propertyType": {"id": "550e8400-e29b-41d4-a716-446655440004", "name": "LOCAL COMERCIAL"}, "address": {"id": "addr-007", "neighborhoodId": "nb-007", "neighborhoodName": "Centro", "postalCode": "29200", "street": "Miguel Hidalgo", "exteriorNumber": "31", "interiorNumber": "A"}, "availableToRent": true, "areaM2": 60, "bedrooms": 0, "bathrooms": 1, "parkingSpaces": 0, "constructionYear": 2021, "condominium": false, "listedPrice": 9500, "amenities": ["Circuito Cerrado (CCTV)", "Acceso Controlado", "Aire Acondicionado"]}], "hechos": {"a_estrenar": "a estrenar", "construccion_reciente": "construcción reciente", "con_historia": "más de 30 años: carácter e historia", "area_amplia": "superficie amplia", "area_compacta": "espacio compacto y eficiente", "en_condominio": "forma parte de un condominio", "sin_estacionamiento": "no mencionar estacionamientos"}};
+const YEAR = new Date().getFullYear();
+const COLX = [30, 560, 940], PILL_W = [250, 210, 230], ROW = 27, GRP_GAP = 34;
+const svg = document.getElementById('g');
+const NS = 'http://www.w3.org/2000/svg';
+const byId = {};
+
+// layout: columna 0 agrupada, columnas 1-2 centradas verticalmente
+let maxY = 0;
+{
+  let y = 20; let g = '';
+  for (const n of D.nodes.filter(n => n.col === 0)) {
+    if (n.grupo !== g) { g = n.grupo; y += (y > 20 ? GRP_GAP : 14); n.grpLabel = g; }
+    n.x = COLX[0]; n.y = y; y += ROW; byId[n.id] = n;
+  }
+  maxY = y + 10;
+  for (const c of [1, 2]) {
+    const col = D.nodes.filter(n => n.col === c);
+    let y0 = (maxY - col.length * ROW * 1.5) / 2;
+    col.forEach((n, i) => { n.x = COLX[c]; n.y = y0 + i * ROW * 1.5; byId[n.id] = n; });
+  }
+}
+svg.setAttribute('viewBox', `0 0 1210 ${maxY}`);
+svg.setAttribute('width', '1210'); svg.setAttribute('height', maxY);
+
+const edgeEls = [];
+for (const e of D.edges) {
+  const s = byId[e.s], t = byId[e.t];
+  const x1 = s.x + PILL_W[s.col], y1 = s.y + 9, x2 = t.x, y2 = t.y + 9;
+  const p = document.createElementNS(NS, 'path');
+  p.setAttribute('d', `M${x1},${y1} C${x1 + 90},${y1} ${x2 - 90},${y2} ${x2},${y2}`);
+  p.setAttribute('class', `e ${e.k}`);
+  p.setAttribute('stroke-width', e.k === 'bloquea' ? 2 : ({0.3: 1.1, 0.6: 2.1, 0.9: 3.4}[e.w] || 2));
+  const ti = document.createElementNS(NS, 'title');
+  ti.textContent = e.k === 'bloquea' ? `BLOQUEO: ${e.why}` : `${e.k} · peso ${e.w}`;
+  p.appendChild(ti); svg.appendChild(p); e.el = p; edgeEls.push(e);
+}
+for (const n of D.nodes) {
+  if (n.grpLabel) {
+    const gt = document.createElementNS(NS, 'text');
+    gt.setAttribute('x', n.x); gt.setAttribute('y', n.y - 8);
+    gt.setAttribute('class', 'grp'); gt.textContent = n.grpLabel; svg.appendChild(gt);
+  }
+  const g = document.createElementNS(NS, 'g');
+  g.setAttribute('class', `node col${n.col}`);
+  const r = document.createElementNS(NS, 'rect');
+  r.setAttribute('x', n.x); r.setAttribute('y', n.y - 4);
+  r.setAttribute('width', PILL_W[n.col]); r.setAttribute('height', 24);
+  r.setAttribute('rx', 7);
+  const tx = document.createElementNS(NS, 'text');
+  tx.setAttribute('x', n.x + 9); tx.setAttribute('y', n.y + 12); tx.textContent = n.label;
+  const ti = document.createElementNS(NS, 'title'); ti.textContent = n.detalle || n.label;
+  g.appendChild(r); g.appendChild(tx); g.appendChild(ti); svg.appendChild(g); n.el = g;
+  g.addEventListener('mouseenter', () => focusNode(n.id));
+  g.addEventListener('mouseleave', () => { if (!pinned) unfocus(); });
+}
+let pinned = null;
+function focusNode(id) {
+  const inc = new Set();
+  for (const e of edgeEls) { if (e.s === id || e.t === id) { e.el.classList.add('hi'); e.el.classList.remove('dim'); inc.add(e.s); inc.add(e.t); } else { e.el.classList.add('dim'); e.el.classList.remove('hi'); } }
+  for (const n of D.nodes) n.el.classList.toggle('dim', !inc.has(n.id) && n.id !== id);
+}
+function unfocus() {
+  for (const e of edgeEls) e.el.classList.remove('dim', 'hi');
+  for (const n of D.nodes) n.el.classList.remove('dim');
+}
+
+// ── simulador: activación → propagación → selección ──
+function bucketsDe(d) {
+  const ant = YEAR - d.constructionYear, b = [];
+  if (ant <= 1) b.push('a_estrenar'); else if (ant <= 10) b.push('construccion_reciente');
+  if (ant > 30) b.push('con_historia');
+  if (d.areaM2 >= 180) b.push('area_amplia'); if (d.areaM2 <= 50) b.push('area_compacta');
+  if (d.bedrooms >= 4) b.push('rec_4_mas'); else if (d.bedrooms >= 2) b.push('rec_2_3');
+  else if (d.bedrooms === 1) b.push('rec_1');
+  if (d.condominium) b.push('en_condominio'); if (d.parkingSpaces === 0) b.push('sin_estacionamiento');
+  return b;
+}
+const norm = s => s.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').trim();
+const aliasN = {}; for (const [k, v] of Object.entries(D.alias)) aliasN[norm(k)] = v;
+
+function simular(d) {
+  const activos = new Set([`op:${d.availableToRent ? 'RENTA' : 'VENTA'}`]);
+  for (const n of D.nodes) if (n.col === 0 && n.grupo === 'Tipo de propiedad' && norm(n.label) === norm(d.propertyType.name)) activos.add(n.id);
+  const bks = bucketsDe(d); bks.forEach(b => activos.add(`bk:${b}`));
+  const desconocidas = [];
+  for (const a of d.amenities) { const c = aliasN[norm(a)]; if (c) activos.add(`am:${c}`); else desconocidas.push(a); }
+
+  const score = {}, contrib = {}, bloqueadosPor = {};
+  for (const e of edgeEls) {
+    if (!activos.has(e.s)) continue;
+    const key = e.t;
+    score[key] = (score[key] || 0) + e.w;
+    (contrib[key] = contrib[key] || []).push(e);
+    if (e.k === 'bloquea') (bloqueadosPor[key] = bloqueadosPor[key] || []).push(e);
+  }
+  const temasRank = D.nodes.filter(n => n.col === 1).map(n => ({
+    n, s: score[n.id] || 0, blk: !!bloqueadosPor[n.id],
+    max: Math.max(0, ...(contrib[n.id] || []).filter(e => e.k !== 'bloquea').map(e => e.w)),
+  })).sort((a, b) => (b.s - a.s) || (b.max - a.max));
+  const ganadores = temasRank.filter(t => !t.blk && t.s >= 0.5).slice(0, 2);
+  const audRank = D.nodes.filter(n => n.col === 2).map(n => ({n, s: score[n.id] || 0}))
+    .sort((a, b) => b.s - a.s);
+  const audiencia = audRank[0] && audRank[0].s > 0 ? audRank[0] : null;
+  const idsGan = new Set(ganadores.map(g => g.n.id));
+  const protag = [];
+  for (const g of ganadores) for (const e of (contrib[g.n.id] || []))
+    if (e.k === 'evoca') protag.push({am: byId[e.s].label, w: e.w});
+  protag.sort((a, b) => b.w - a.w);
+  return {activos, desconocidas, temasRank, ganadores, audiencia, bloqueadosPor, contrib, idsGan,
+          protag: [...new Map(protag.map(p => [p.am, p])).values()].slice(0, 2), bks};
+}
+
+const sel = document.getElementById('draftSel');
+D.drafts.forEach((d, i) => {
+  const o = document.createElement('option'); o.value = i;
+  o.textContent = `${d.id} · ${d.propertyType.name} · ${d.availableToRent ? 'RENTA' : 'VENTA'} · ${d.address.neighborhoodName}`;
+  sel.appendChild(o);
+});
+document.getElementById('btnClear').addEventListener('click', () => { sel.value = ''; pinned = null; unfocus(); for (const n of D.nodes) n.el.classList.remove('activo'); render(null); });
+sel.addEventListener('change', () => {
+  if (sel.value === '') { pinned = null; unfocus(); render(null); return; }
+  const d = D.drafts[+sel.value]; const r = simular(d); pinned = true;
+  for (const n of D.nodes) n.el.classList.toggle('activo', r.activos.has(n.id) || r.idsGan.has(n.id) || (r.audiencia && n.id === r.audiencia.n.id));
+  for (const n of D.nodes) n.el.classList.remove('dim');
+  for (const e of edgeEls) {
+    const rel = r.activos.has(e.s) && (r.idsGan.has(e.t) || (r.audiencia && e.t === r.audiencia.n.id) || e.k === 'bloquea');
+    e.el.classList.toggle('hi', rel); e.el.classList.toggle('dim', !rel && !r.activos.has(e.s));
+  }
+  render(r, d);
+});
+
+function render(r, d) {
+  const p = document.getElementById('panel');
+  if (!r) { p.innerHTML = '<h2>Decisión del grafo</h2><p class="empty">Selecciona un draft para propagar la inferencia y ver la traza de decisión.</p>'; return; }
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const hechos = r.bks.filter(b => D.hechos[b]).map(b => D.hechos[b]);
+  let h = `<h2>Decisión del grafo — ${esc(d.id)}</h2>`;
+  h += `<div class="dec"><div class="k">Resumen para el LLM</div>` +
+    `<div><b>Temas:</b> ${r.ganadores.map(g => esc(g.n.label)).join('; ') || '<i>ninguno supera el umbral</i>'}</div>` +
+    `<div><b>Audiencia:</b> ${r.audiencia ? esc(r.audiencia.n.detalle) : '—'}</div>` +
+    `<div><b>Protagonistas:</b> ${r.protag.map(x => esc(x.am)).join(', ') || '—'}</div>` +
+    (hechos.length ? `<div><b>Hechos:</b> ${esc(hechos.join('; '))}</div>` : '') +
+    (r.desconocidas.length ? `<div><b>Sin ángulo aprobado:</b> ${esc(r.desconocidas.join(', '))} <span class="k">(solo por nombre)</span></div>` : '') +
+    `</div>`;
+  h += `<h2>Scores de temas</h2>`;
+  const mx = Math.max(0.001, ...r.temasRank.filter(t => !t.blk).map(t => t.s));
+  for (const t of r.temasRank) {
+    const win = r.idsGan.has(t.n.id);
+    h += `<div class="score${win ? ' win' : ''}${t.blk ? ' blk' : ''}">` +
+      `<span class="name">${esc(t.n.label)}</span>` +
+      `<span class="bar"><i style="width:${t.blk ? 0 : Math.round(100 * t.s / mx)}%"></i></span>` +
+      `<span class="num">${t.blk ? 'BLQ' : t.s.toFixed(1)}</span></div>`;
+  }
+  const razones = Object.values(r.bloqueadosPor).flat().map(e => `<p class="why"><b>${esc(byId[e.t].label)}</b> bloqueado por ${esc(byId[e.s].label)}: ${esc(e.why)}</p>`);
+  if (razones.length) h += `<h2 style="margin-top:12px">Bloqueos activos</h2>` + razones.join('');
+  p.innerHTML = h;
+}
+</script>

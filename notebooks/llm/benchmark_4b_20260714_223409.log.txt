@@ -1,0 +1,153 @@
+22:34:09 | ══════════════════════════════════════════════════════════════════════
+22:34:09 | [1] VARIABLES
+22:34:09 | [1] modelo=Qwen3-4B-Instruct-2507-Q4_K_M.gguf | inferencias=100 | threads(llama.cpp)=4 | n_ctx=4096 | temperature=1.0 | max_tokens=512
+22:34:09 | [1] Concurrencia: hilos nativos dentro de cada inferencia; peticiones secuenciales (modelo del worker en producción)
+22:34:09 | [1] Salidas: benchmark_4b_20260714_223409.csv / benchmark_4b_20260714_223409.log.txt
+22:34:09 | [1] 7 drafts base (se rotan cíclicamente hasta 100 inferencias)
+22:34:09 | ══════════════════════════════════════════════════════════════════════
+22:34:09 | [2] MONTAJE DEL GRAFO Y PROMPT
+22:34:09 | [2] Grafo montado en 1.0 ms — 33 nodos, 26 aristas, 28 aliases
+22:34:09 | [2] Nodos por tipo: {'tema': 9, 'amenidad': 14, 'tipo_propiedad': 4, 'operacion': 2, 'audiencia': 4}
+22:34:09 | [2] System prompt v3 (1375 chars):
+Eres un redactor inmobiliario profesional de México. Recibirás el DRAFT de una propiedad y un bloque de HECHOS Y ÁNGULOS APROBADOS. Escribirás el anuncio para un portal inmobiliario.
+
+Reglas estrictas:
+1. Usa ÚNICAMENTE la información del DRAFT y de los HECHOS Y ÁNGULOS APROBADOS. Puedes parafrasear las frases aprobadas con naturalidad, pero NO agregues características, lugares, vistas, cercanías ni cualidades que no aparezcan ahí.
+2. PROHIBIDO mencionar precios, montos, rentas, mensualidades o cualquier cifra monetaria.
+3. PROHIBIDO incluir datos de contacto, invitaciones a llamar, escribir o agendar visitas, y lenguaje de urgencia ("aprovecha", "no te lo pierdas", "últimos días", "oportunidad única").
+4. La única ubicación que puedes mencionar es el nombre de la colonia, tal como aparece en el draft.
+5. Usa español de México y vocabulario de la región: "recámaras" (nunca "habitaciones") y "estacionamientos" (nunca "cajones de estacionamiento" ni "plazas de garaje"). Si el draft no menciona estacionamientos, no hables de ellos.
+6. El título debe tener máximo 10 palabras, atractivo sin ser sensacionalista.
+7. La descripción debe tener entre 21 y 70 palabras, en párrafos fluidos (sin listas), con tono cálido y humano, sin mayúsculas sostenidas ni signos de admiración excesivos.
+
+Responde exclusivamente con un JSON con las claves "titulo" y "descripcion".
+22:34:09 | [2] Ejemplo de contexto curado (draft draft-001):
+HECHOS Y ÁNGULOS APROBADOS (única fuente permitida además del draft):
+- Operación RENTA: hogar disponible para renta; enfatiza la vida diaria y la facilidad de instalarse; jamás menciones montos, rentas ni mensualidades.
+- Un(a) casa se narra por sus espacios, su independencia y la vida cotidiana que permite.
+- terraza → vida al aire libre: "espacios para disfrutar el aire libre sin salir de casa".
+- gimnasio → bienestar: "facilita una rutina activa y saludable".
+- Audiencia sugerida: familias que necesitan espacio para todos.
+- Antigüedad: a estrenar — puedes destacar que es de reciente construcción.
+- Superficie: puedes describirla como amplia.
+22:34:09 | ══════════════════════════════════════════════════════════════════════
+22:34:09 | [3] MONTAJE DEL MODELO
+22:34:10 | [3] Modelo cargado en 0.9 s | RAM del modelo: 4.90 GB | RAM total del proceso: 4.97 GB
+22:34:10 | ══════════════════════════════════════════════════════════════════════
+22:34:10 | [4] INICIO DE 100 INFERENCIAS
+22:34:44 | [4]   1/100 draft-001 | parseo 0.0 ms | grafo 0.1 ms | llm 34.2 s (4.0 tok/s) | prompt 705 tok | salida 136 tok | RAM 5.16 GB
+22:35:07 | [4]   2/100 draft-002 | parseo 0.0 ms | grafo 0.1 ms | llm 22.7 s (5.5 tok/s) | prompt 683 tok | salida 124 tok | RAM 5.17 GB
+22:35:32 | [4]   3/100 draft-003 | parseo 0.0 ms | grafo 0.0 ms | llm 24.7 s (5.2 tok/s) | prompt 713 tok | salida 128 tok | RAM 5.17 GB
+22:35:54 | [4]   4/100 draft-004 | parseo 0.0 ms | grafo 0.1 ms | llm 22.2 s (5.5 tok/s) | prompt 679 tok | salida 122 tok | RAM 5.17 GB
+22:36:13 | [4]   5/100 draft-005 | parseo 0.0 ms | grafo 0.0 ms | llm 19.0 s (5.8 tok/s) | prompt 614 tok | salida 110 tok | RAM 5.17 GB
+22:36:38 | [4]   6/100 draft-006 | parseo 0.0 ms | grafo 0.0 ms | llm 24.6 s (4.6 tok/s) | prompt 681 tok | salida 112 tok | RAM 5.17 GB
+22:36:59 | [4]   7/100 draft-007 | parseo 0.0 ms | grafo 0.1 ms | llm 21.6 s (4.9 tok/s) | prompt 654 tok | salida 105 tok | RAM 5.16 GB
+22:37:24 | [4]   8/100 draft-001 | parseo 0.0 ms | grafo 0.1 ms | llm 25.0 s (4.9 tok/s) | prompt 705 tok | salida 123 tok | RAM 5.18 GB
+22:37:48 | [4]   9/100 draft-002 | parseo 0.0 ms | grafo 0.0 ms | llm 23.6 s (5.1 tok/s) | prompt 683 tok | salida 120 tok | RAM 5.17 GB
+22:38:14 | [4]  10/100 draft-003 | parseo 0.0 ms | grafo 0.0 ms | llm 26.7 s (5.2 tok/s) | prompt 713 tok | salida 139 tok | RAM 5.17 GB
+22:38:40 | [4]  11/100 draft-004 | parseo 0.0 ms | grafo 0.1 ms | llm 26.1 s (4.5 tok/s) | prompt 679 tok | salida 118 tok | RAM 5.16 GB
+22:39:02 | [4]  12/100 draft-005 | parseo 0.0 ms | grafo 0.0 ms | llm 21.2 s (5.6 tok/s) | prompt 614 tok | salida 119 tok | RAM 5.16 GB
+22:39:26 | [4]  13/100 draft-006 | parseo 0.0 ms | grafo 0.1 ms | llm 24.3 s (4.6 tok/s) | prompt 681 tok | salida 111 tok | RAM 5.17 GB
+22:39:51 | [4]  14/100 draft-007 | parseo 0.0 ms | grafo 0.0 ms | llm 24.9 s (3.9 tok/s) | prompt 654 tok | salida 98 tok | RAM 5.17 GB
+22:40:19 | [4]  15/100 draft-001 | parseo 0.0 ms | grafo 0.1 ms | llm 27.8 s (4.1 tok/s) | prompt 705 tok | salida 114 tok | RAM 5.17 GB
+22:40:50 | [4]  16/100 draft-002 | parseo 0.0 ms | grafo 0.1 ms | llm 31.8 s (4.5 tok/s) | prompt 683 tok | salida 144 tok | RAM 5.17 GB
+22:41:18 | [4]  17/100 draft-003 | parseo 0.0 ms | grafo 0.0 ms | llm 27.9 s (4.5 tok/s) | prompt 713 tok | salida 127 tok | RAM 5.16 GB
+22:41:50 | [4]  18/100 draft-004 | parseo 0.0 ms | grafo 0.1 ms | llm 31.2 s (4.0 tok/s) | prompt 679 tok | salida 124 tok | RAM 5.17 GB
+22:42:14 | [4]  19/100 draft-005 | parseo 0.0 ms | grafo 0.0 ms | llm 24.3 s (4.7 tok/s) | prompt 614 tok | salida 115 tok | RAM 5.17 GB
+22:42:43 | [4]  20/100 draft-006 | parseo 0.0 ms | grafo 0.0 ms | llm 28.9 s (3.9 tok/s) | prompt 681 tok | salida 113 tok | RAM 5.17 GB
+22:43:05 | [4]  21/100 draft-007 | parseo 0.0 ms | grafo 0.1 ms | llm 22.3 s (4.2 tok/s) | prompt 654 tok | salida 94 tok | RAM 5.17 GB
+22:43:31 | [4]  22/100 draft-001 | parseo 0.0 ms | grafo 0.0 ms | llm 26.3 s (5.1 tok/s) | prompt 705 tok | salida 135 tok | RAM 5.17 GB
+22:43:57 | [4]  23/100 draft-002 | parseo 0.0 ms | grafo 0.1 ms | llm 25.1 s (5.3 tok/s) | prompt 683 tok | salida 133 tok | RAM 5.16 GB
+22:44:20 | [4]  24/100 draft-003 | parseo 0.0 ms | grafo 0.0 ms | llm 23.8 s (4.9 tok/s) | prompt 713 tok | salida 116 tok | RAM 5.16 GB
+22:44:44 | [4]  25/100 draft-004 | parseo 0.0 ms | grafo 0.1 ms | llm 23.7 s (5.1 tok/s) | prompt 679 tok | salida 120 tok | RAM 5.17 GB
+22:45:07 | [4]  26/100 draft-005 | parseo 0.0 ms | grafo 0.0 ms | llm 22.5 s (5.0 tok/s) | prompt 614 tok | salida 113 tok | RAM 5.17 GB
+22:45:29 | [4]  27/100 draft-006 | parseo 0.0 ms | grafo 0.0 ms | llm 22.9 s (4.9 tok/s) | prompt 681 tok | salida 112 tok | RAM 5.17 GB
+22:45:50 | [4]  28/100 draft-007 | parseo 0.0 ms | grafo 0.1 ms | llm 20.4 s (5.1 tok/s) | prompt 654 tok | salida 104 tok | RAM 5.16 GB
+22:46:14 | [4]  29/100 draft-001 | parseo 0.0 ms | grafo 0.0 ms | llm 24.0 s (5.2 tok/s) | prompt 705 tok | salida 124 tok | RAM 5.17 GB
+22:46:37 | [4]  30/100 draft-002 | parseo 0.0 ms | grafo 0.1 ms | llm 22.9 s (5.0 tok/s) | prompt 683 tok | salida 115 tok | RAM 5.17 GB
+22:47:03 | [4]  31/100 draft-003 | parseo 0.0 ms | grafo 0.1 ms | llm 26.6 s (4.9 tok/s) | prompt 713 tok | salida 131 tok | RAM 5.17 GB
+22:47:27 | [4]  32/100 draft-004 | parseo 0.0 ms | grafo 0.1 ms | llm 23.8 s (5.3 tok/s) | prompt 679 tok | salida 127 tok | RAM 5.17 GB
+22:47:48 | [4]  33/100 draft-005 | parseo 0.0 ms | grafo 0.0 ms | llm 21.2 s (5.7 tok/s) | prompt 614 tok | salida 120 tok | RAM 5.18 GB
+22:48:13 | [4]  34/100 draft-006 | parseo 0.0 ms | grafo 0.0 ms | llm 24.4 s (5.0 tok/s) | prompt 681 tok | salida 123 tok | RAM 5.16 GB
+22:48:36 | [4]  35/100 draft-007 | parseo 0.0 ms | grafo 0.0 ms | llm 23.5 s (4.8 tok/s) | prompt 654 tok | salida 112 tok | RAM 5.17 GB
+22:49:02 | [4]  36/100 draft-001 | parseo 0.0 ms | grafo 0.1 ms | llm 25.5 s (4.8 tok/s) | prompt 705 tok | salida 122 tok | RAM 5.17 GB
+22:49:27 | [4]  37/100 draft-002 | parseo 0.0 ms | grafo 0.1 ms | llm 25.6 s (5.0 tok/s) | prompt 683 tok | salida 128 tok | RAM 5.17 GB
+22:49:55 | [4]  38/100 draft-003 | parseo 0.0 ms | grafo 0.1 ms | llm 27.5 s (4.6 tok/s) | prompt 713 tok | salida 127 tok | RAM 5.16 GB
+22:50:24 | [4]  39/100 draft-004 | parseo 0.0 ms | grafo 0.0 ms | llm 28.8 s (4.1 tok/s) | prompt 679 tok | salida 119 tok | RAM 5.16 GB
+22:50:51 | [4]  40/100 draft-005 | parseo 0.0 ms | grafo 0.0 ms | llm 27.1 s (4.5 tok/s) | prompt 614 tok | salida 123 tok | RAM 5.17 GB
+22:51:13 | [4]  41/100 draft-006 | parseo 0.0 ms | grafo 0.0 ms | llm 22.6 s (4.9 tok/s) | prompt 681 tok | salida 111 tok | RAM 5.17 GB
+22:51:35 | [4]  42/100 draft-007 | parseo 0.0 ms | grafo 0.0 ms | llm 21.4 s (4.9 tok/s) | prompt 654 tok | salida 106 tok | RAM 5.16 GB
+22:52:01 | [4]  43/100 draft-001 | parseo 0.0 ms | grafo 0.0 ms | llm 25.9 s (4.7 tok/s) | prompt 705 tok | salida 123 tok | RAM 5.17 GB
+22:52:28 | [4]  44/100 draft-002 | parseo 0.0 ms | grafo 0.1 ms | llm 27.1 s (4.4 tok/s) | prompt 683 tok | salida 119 tok | RAM 5.16 GB
+22:52:58 | [4]  45/100 draft-003 | parseo 0.0 ms | grafo 0.0 ms | llm 30.5 s (3.8 tok/s) | prompt 713 tok | salida 115 tok | RAM 5.16 GB
+22:53:27 | [4]  46/100 draft-004 | parseo 0.0 ms | grafo 0.1 ms | llm 28.8 s (4.4 tok/s) | prompt 679 tok | salida 127 tok | RAM 5.16 GB
+22:53:54 | [4]  47/100 draft-005 | parseo 0.0 ms | grafo 0.0 ms | llm 26.8 s (4.6 tok/s) | prompt 614 tok | salida 123 tok | RAM 5.16 GB
+22:54:22 | [4]  48/100 draft-006 | parseo 0.0 ms | grafo 0.0 ms | llm 27.5 s (4.3 tok/s) | prompt 681 tok | salida 117 tok | RAM 5.16 GB
+22:54:42 | [4]  49/100 draft-007 | parseo 0.0 ms | grafo 0.1 ms | llm 20.0 s (4.0 tok/s) | prompt 654 tok | salida 80 tok | RAM 5.17 GB
+22:55:06 | [4]  50/100 draft-001 | parseo 0.0 ms | grafo 0.1 ms | llm 24.8 s (4.8 tok/s) | prompt 705 tok | salida 118 tok | RAM 5.17 GB
+22:55:31 | [4]  51/100 draft-002 | parseo 0.0 ms | grafo 0.1 ms | llm 24.8 s (4.6 tok/s) | prompt 683 tok | salida 114 tok | RAM 5.17 GB
+22:56:00 | [4]  52/100 draft-003 | parseo 0.0 ms | grafo 0.1 ms | llm 29.2 s (4.1 tok/s) | prompt 713 tok | salida 120 tok | RAM 5.16 GB
+22:56:22 | [4]  53/100 draft-004 | parseo 0.0 ms | grafo 0.0 ms | llm 22.0 s (4.8 tok/s) | prompt 679 tok | salida 105 tok | RAM 5.17 GB
+22:56:49 | [4]  54/100 draft-005 | parseo 0.0 ms | grafo 0.0 ms | llm 26.8 s (4.7 tok/s) | prompt 614 tok | salida 125 tok | RAM 5.17 GB
+22:57:12 | [4]  55/100 draft-006 | parseo 0.0 ms | grafo 0.1 ms | llm 22.7 s (4.8 tok/s) | prompt 681 tok | salida 108 tok | RAM 5.16 GB
+22:57:33 | [4]  56/100 draft-007 | parseo 0.0 ms | grafo 0.1 ms | llm 20.8 s (4.8 tok/s) | prompt 654 tok | salida 100 tok | RAM 5.18 GB
+22:57:59 | [4]  57/100 draft-001 | parseo 0.0 ms | grafo 0.1 ms | llm 26.1 s (4.9 tok/s) | prompt 705 tok | salida 129 tok | RAM 5.17 GB
+22:58:27 | [4]  58/100 draft-002 | parseo 0.0 ms | grafo 0.1 ms | llm 27.8 s (4.6 tok/s) | prompt 683 tok | salida 129 tok | RAM 5.18 GB
+22:59:00 | [4]  59/100 draft-003 | parseo 0.0 ms | grafo 0.1 ms | llm 32.9 s (4.1 tok/s) | prompt 713 tok | salida 134 tok | RAM 5.18 GB
+22:59:21 | [4]  60/100 draft-004 | parseo 0.0 ms | grafo 0.0 ms | llm 21.1 s (5.3 tok/s) | prompt 679 tok | salida 112 tok | RAM 5.18 GB
+22:59:41 | [4]  61/100 draft-005 | parseo 0.0 ms | grafo 0.0 ms | llm 20.2 s (5.7 tok/s) | prompt 614 tok | salida 116 tok | RAM 5.19 GB
+23:00:02 | [4]  62/100 draft-006 | parseo 0.0 ms | grafo 0.0 ms | llm 21.0 s (5.1 tok/s) | prompt 681 tok | salida 108 tok | RAM 5.18 GB
+23:00:21 | [4]  63/100 draft-007 | parseo 0.0 ms | grafo 0.1 ms | llm 18.8 s (5.1 tok/s) | prompt 654 tok | salida 96 tok | RAM 5.18 GB
+23:00:44 | [4]  64/100 draft-001 | parseo 0.0 ms | grafo 0.0 ms | llm 23.9 s (5.2 tok/s) | prompt 705 tok | salida 123 tok | RAM 5.18 GB
+23:01:08 | [4]  65/100 draft-002 | parseo 0.0 ms | grafo 0.1 ms | llm 23.9 s (5.2 tok/s) | prompt 683 tok | salida 125 tok | RAM 5.18 GB
+23:01:34 | [4]  66/100 draft-003 | parseo 0.0 ms | grafo 0.1 ms | llm 26.1 s (5.3 tok/s) | prompt 713 tok | salida 137 tok | RAM 5.19 GB
+23:01:57 | [4]  67/100 draft-004 | parseo 0.0 ms | grafo 0.1 ms | llm 22.2 s (5.2 tok/s) | prompt 679 tok | salida 115 tok | RAM 5.18 GB
+23:02:18 | [4]  68/100 draft-005 | parseo 0.0 ms | grafo 0.0 ms | llm 21.8 s (5.7 tok/s) | prompt 614 tok | salida 123 tok | RAM 5.18 GB
+23:02:41 | [4]  69/100 draft-006 | parseo 0.0 ms | grafo 0.0 ms | llm 22.3 s (5.2 tok/s) | prompt 681 tok | salida 115 tok | RAM 5.18 GB
+23:03:04 | [4]  70/100 draft-007 | parseo 0.0 ms | grafo 0.0 ms | llm 23.0 s (5.4 tok/s) | prompt 654 tok | salida 125 tok | RAM 5.18 GB
+23:03:29 | [4]  71/100 draft-001 | parseo 0.0 ms | grafo 0.0 ms | llm 25.6 s (5.2 tok/s) | prompt 705 tok | salida 133 tok | RAM 5.19 GB
+23:03:56 | [4]  72/100 draft-002 | parseo 0.0 ms | grafo 0.1 ms | llm 27.1 s (5.3 tok/s) | prompt 683 tok | salida 144 tok | RAM 5.19 GB
+23:04:23 | [4]  73/100 draft-003 | parseo 0.0 ms | grafo 0.0 ms | llm 26.8 s (4.9 tok/s) | prompt 713 tok | salida 131 tok | RAM 5.18 GB
+23:04:47 | [4]  74/100 draft-004 | parseo 0.0 ms | grafo 0.0 ms | llm 24.1 s (4.8 tok/s) | prompt 679 tok | salida 115 tok | RAM 5.18 GB
+23:05:11 | [4]  75/100 draft-005 | parseo 0.0 ms | grafo 0.0 ms | llm 23.3 s (5.4 tok/s) | prompt 614 tok | salida 126 tok | RAM 5.16 GB
+23:05:33 | [4]  76/100 draft-006 | parseo 0.0 ms | grafo 0.1 ms | llm 22.4 s (5.4 tok/s) | prompt 681 tok | salida 121 tok | RAM 5.17 GB
+23:05:53 | [4]  77/100 draft-007 | parseo 0.0 ms | grafo 0.0 ms | llm 20.3 s (5.2 tok/s) | prompt 654 tok | salida 105 tok | RAM 5.17 GB
+23:06:18 | [4]  78/100 draft-001 | parseo 0.0 ms | grafo 0.1 ms | llm 25.1 s (4.7 tok/s) | prompt 705 tok | salida 119 tok | RAM 5.17 GB
+23:06:43 | [4]  79/100 draft-002 | parseo 0.0 ms | grafo 0.0 ms | llm 25.1 s (5.2 tok/s) | prompt 683 tok | salida 130 tok | RAM 5.17 GB
+23:07:07 | [4]  80/100 draft-003 | parseo 0.0 ms | grafo 0.0 ms | llm 23.1 s (5.1 tok/s) | prompt 713 tok | salida 118 tok | RAM 5.16 GB
+23:07:29 | [4]  81/100 draft-004 | parseo 0.0 ms | grafo 0.0 ms | llm 22.7 s (5.3 tok/s) | prompt 679 tok | salida 120 tok | RAM 5.17 GB
+23:07:51 | [4]  82/100 draft-005 | parseo 0.0 ms | grafo 0.0 ms | llm 21.3 s (5.7 tok/s) | prompt 614 tok | salida 122 tok | RAM 5.17 GB
+23:08:13 | [4]  83/100 draft-006 | parseo 0.0 ms | grafo 0.0 ms | llm 21.9 s (5.3 tok/s) | prompt 681 tok | salida 116 tok | RAM 5.17 GB
+23:08:31 | [4]  84/100 draft-007 | parseo 0.0 ms | grafo 0.0 ms | llm 18.4 s (5.2 tok/s) | prompt 654 tok | salida 95 tok | RAM 5.17 GB
+23:08:57 | [4]  85/100 draft-001 | parseo 0.0 ms | grafo 0.1 ms | llm 26.2 s (5.3 tok/s) | prompt 705 tok | salida 140 tok | RAM 5.17 GB
+23:09:23 | [4]  86/100 draft-002 | parseo 0.0 ms | grafo 0.1 ms | llm 25.4 s (5.5 tok/s) | prompt 683 tok | salida 139 tok | RAM 5.17 GB
+23:09:48 | [4]  87/100 draft-003 | parseo 0.0 ms | grafo 0.0 ms | llm 25.7 s (5.2 tok/s) | prompt 713 tok | salida 134 tok | RAM 5.17 GB
+23:10:12 | [4]  88/100 draft-004 | parseo 0.0 ms | grafo 0.0 ms | llm 24.1 s (5.4 tok/s) | prompt 679 tok | salida 130 tok | RAM 5.17 GB
+23:10:35 | [4]  89/100 draft-005 | parseo 0.0 ms | grafo 0.0 ms | llm 23.0 s (5.6 tok/s) | prompt 614 tok | salida 129 tok | RAM 5.16 GB
+23:11:00 | [4]  90/100 draft-006 | parseo 0.0 ms | grafo 0.0 ms | llm 24.1 s (5.3 tok/s) | prompt 681 tok | salida 128 tok | RAM 5.16 GB
+23:11:21 | [4]  91/100 draft-007 | parseo 0.0 ms | grafo 0.0 ms | llm 21.4 s (5.2 tok/s) | prompt 654 tok | salida 111 tok | RAM 5.16 GB
+23:11:42 | [4]  92/100 draft-001 | parseo 0.0 ms | grafo 0.0 ms | llm 20.6 s (4.8 tok/s) | prompt 705 tok | salida 98 tok | RAM 5.17 GB
+23:12:04 | [4]  93/100 draft-002 | parseo 0.0 ms | grafo 0.0 ms | llm 22.2 s (5.1 tok/s) | prompt 683 tok | salida 113 tok | RAM 5.17 GB
+23:12:27 | [4]  94/100 draft-003 | parseo 0.0 ms | grafo 0.1 ms | llm 23.8 s (5.0 tok/s) | prompt 713 tok | salida 118 tok | RAM 5.17 GB
+23:12:52 | [4]  95/100 draft-004 | parseo 0.0 ms | grafo 0.0 ms | llm 24.1 s (5.2 tok/s) | prompt 679 tok | salida 125 tok | RAM 5.17 GB
+23:13:14 | [4]  96/100 draft-005 | parseo 0.0 ms | grafo 0.0 ms | llm 22.6 s (5.6 tok/s) | prompt 614 tok | salida 126 tok | RAM 5.17 GB
+23:13:36 | [4]  97/100 draft-006 | parseo 0.0 ms | grafo 0.0 ms | llm 21.6 s (5.0 tok/s) | prompt 681 tok | salida 108 tok | RAM 5.16 GB
+23:13:57 | [4]  98/100 draft-007 | parseo 0.0 ms | grafo 0.0 ms | llm 21.0 s (5.2 tok/s) | prompt 654 tok | salida 109 tok | RAM 5.16 GB
+23:14:23 | [4]  99/100 draft-001 | parseo 0.0 ms | grafo 0.0 ms | llm 26.0 s (5.1 tok/s) | prompt 705 tok | salida 133 tok | RAM 5.16 GB
+23:14:46 | [4] 100/100 draft-002 | parseo 0.0 ms | grafo 0.1 ms | llm 23.0 s (5.1 tok/s) | prompt 683 tok | salida 118 tok | RAM 5.16 GB
+23:14:46 | ══════════════════════════════════════════════════════════════════════
+23:14:46 | [5] RECOLECCIÓN DE RESULTADOS
+23:14:46 | [5] CSV escrito: /home/aleosh/Documentos/Ingeniería en Software/9no Cuatrimestre/Integrador/vps/vivia-ai/notebooks/llm/benchmark_4b_20260714_223409.csv (100 filas)
+23:14:46 | [5] Tiempo total del benchmark: 40.6 min (24.4 s por inferencia efectivos)
+23:14:46 | [5] t_parseo_ms  : prom 0.01 | mediana 0.01 | min 0.01 | max 0.02 | p95 0.01
+23:14:46 | [5] t_grafo_ms   : prom 0.04 | mediana 0.04 | min 0.02 | max 0.06 | p95 0.05
+23:14:46 | [5] t_llm_s      : prom 24.35 | mediana 24.02 | min 18.37 | max 34.22 | p95 30.42
+23:14:46 | [5] t_salida_ms  : prom 0.03 | mediana 0.02 | min 0.02 | max 0.08 | p95 0.05
+23:14:46 | [5] t_total_s    : prom 24.35 | mediana 24.02 | min 18.37 | max 34.22 | p95 30.42
+23:14:46 | [5] tokens_prompt: prom 675.94 | mediana 681.00 | min 614.00 | max 713.00 | p95 713.00
+23:14:46 | [5] tokens_salida: prom 119.52 | mediana 120.00 | min 80.00 | max 144.00 | p95 138.90
+23:14:46 | [5] tok/s gen    : prom 4.94 | mediana 5.00 | min 3.80 | max 5.80 | p95 5.69
+23:14:46 | [5] palabras     : prom 62.05 | mediana 62.00 | min 38.00 | max 77.00 | p95 74.00
+23:14:46 | [5] Violaciones precio/contacto: 0/100
+23:14:46 | [5] RAM final del proceso: 5.16 GB
+23:14:46 | [5] FIN

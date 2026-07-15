@@ -1,0 +1,154 @@
+================================================================================
+                 MÉTRICAS DE GENERACIÓN DE TÍTULO Y DESCRIPCIÓN CON LLM LOCAL
+================================================================================
+
+Fecha:            2026-07-14
+Tarea:            Generar {titulo, descripcion} de una propiedad a partir del
+                  draft de la API transaccional
+Banco de pruebas: 7 drafts reales (drafts_ejemplo.json)
+
+
+================================================================================
+ENTORNO
+================================================================================
+
+Hardware:         Máquina local de desarrollo — 8 cores, 19 GB RAM,
+                  inferencia 100% CPU (4 threads)
+Runtime:          llama-cpp-python 0.3.34 (llama.cpp)
+                  Modelos GGUF cuantizados Q4_K_M
+Contexto:         n_ctx = 4096 tokens en todas las variantes
+
+
+================================================================================
+PREPARACIÓN PREVIA (una sola vez)
+================================================================================
+
+1. DESCARGA DE MODELOS (notebooks 01 y 04)
+   GGUF desde Hugging Face al cache local en models_registry/llm/
+   - unsloth/Qwen3-4B-Instruct-2507-GGUF (2.50 GB)
+   - unsloth/Qwen3-1.7B-GGUF (1.11 GB)
+
+2. GRAFO DE CONOCIMIENTO DEL DOMINIO (notebook 03)
+   - 33 nodos / 26 aristas curados a mano
+   - Temas con frases aprobadas
+   - Amenidades con aliases
+   - Tipos de propiedad
+   - Operación renta/venta
+   - Audiencias
+   - Serializado en grafo_dominio.json
+
+3. REGLAS DURAS DEL NEGOCIO (prompt)
+   - Nunca precios/montos (listedPrice no entra al contexto)
+   - Nunca contacto/urgencia
+   - Ubicación solo por nombre de colonia
+
+
+================================================================================
+MODELOS Y MODOS
+================================================================================
+
+v2-4B
+  Modelo:            Qwen3-4B-Instruct-2507
+  Modo:              Prompt directo con el draft (sin grafo)
+  Salida:            JSON forzada por gramática
+
+v3-4B
+  Modelo:            Qwen3-4B-Instruct-2507
+  Modo:              Draft + contexto curado del grafo (~180 tok)
+  Salida:            JSON por gramática
+
+v3-1.7B
+  Modelo:            Qwen3-1.7B
+  Modo:              Igual que v3, con /no_think (desactiva razonamiento)
+  Salida:            JSON por gramática
+
+v3-1.7B-think
+  Modelo:            Qwen3-1.7B
+  Modo:              Igual que v3, con razonamiento <think> activo
+  Salida:            Sin gramática (bloquearía el think); JSON parseado
+
+
+================================================================================
+PIPELINE DE INFERENCIA (v3)
+================================================================================
+
+Draft JSON
+    ↓
+Parser (excluye precio, calle e ids)
+    ↓
+Consulta del grafo
+  (amenidades normalizadas por alias → temas → frases aprobadas + audiencia
+   + hechos derivados)
+    ↓
+System prompt fijo + mensaje con draft y hechos
+    ↓
+Generación con temperature 1.0 (0.6 en modo think)
+    ↓
+Verificación automática por regex (precio / contacto)
+
+
+================================================================================
+MÉTRICAS (7 inferencias por variante)
+================================================================================
+
+VARIANTE           TIEMPO      RANGO       TOKENS PROMPT    TOKENS       PALABRAS    RAM       JSON VÁLIDO    VIOLACIONES
+                   PROM.                   (CONTEXTO)       RAZONAM.     SALIDA                              PRECIO/CONTACT
+
+v2-4B              21.5 s      17–31 s     425              —            53          ~5.0 GB   7/7 (gramática) 0
+v3-4B              26.1 s      21–36 s     670              —            60          ~5.0 GB   7/7 (gramática) 0
+★ v3-1.7B          12.9 s      12–15 s     674              —            64          ~2.3 GB   7/7 (gramática) 0
+v3-1.7B-think      51.0 s      33–74 s     ~674             665          49          ~2.3 GB   7/7 (parseado)  0
+
+
+NOTAS:
+------
+• RAM medida sobre el proceso al cargar modelo + contexto. El 4B se midió en
+  5.5 GB con n_ctx=8192; con 4096 se estima ~5.0 GB.
+
+• El system prompt es idéntico entre llamadas y llama.cpp reutiliza ese prefijo,
+  así que el costo real por inferencia es procesar solo el draft + grafo
+  (~250–300 tokens nuevos) y generar.
+
+• En modo think el modelo gastó en promedio 665 tokens pensando para producir
+  ~49 palabras: el razonamiento duplica el costo del 4B sin mejorar la garantía
+  de formato.
+
+
+================================================================================
+CONCLUSIONES
+================================================================================
+
+1. v3-1.7B ES EL CANDIDATO PARA PRODUCCIÓN
+   - 2× más rápido que v3-4B (12.9 s vs 26.1 s)
+   - Menos de la mitad de RAM (2.3 GB vs ~5 GB)
+   - 0 violaciones en las verificaciones automáticas
+   - Calidad de redacción equivale aproximadamente a v2 (4B sin grafo)
+   - El grafo es lo que lo hace viable
+
+2. MODO THINK NO PAGA
+   - 51 s promedio (más lento que el 4B)
+   - Calidad aún por debajo de v3-4B
+   - Sin gramática que garantice el JSON
+
+3. v3-4B QUEDA COMO REFERENCIA DE CALIDAD
+   - Si la revisión editorial exige su nivel de redacción:
+     costo es ~2× en tiempo y RAM
+
+4. EXTRAPOLACIÓN AL VPS
+   - Hardware: 6 cores, 12 GB RAM
+   - Estimación: ~1.5–2× más lento
+   - Tiempo esperado: v3-1.7B ≈ 20–26 s por anuncio
+   - RAM: ~2.5 GB
+   - Suficiente espacio para el resto del stack (RabbitMQ, MLflow, servicios)
+
+
+================================================================================
+DATOS FUENTE
+================================================================================
+
+- resultados_ab_grafo.csv
+- resultados_qwen17b.csv
+- resultados_qwen17b_think.csv
+  (mismos 7 drafts en las 4 variantes)
+
+================================================================================

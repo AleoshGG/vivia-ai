@@ -1,0 +1,150 @@
+01:39:32 | ══════════════════════════════════════════════════════════════════════
+01:39:32 | [1] VARIABLES
+01:39:32 | [1] modelo=Qwen3-4B-Instruct-2507-Q4_K_M.gguf | inferencias=100 | threads=4 | ctx=4096 | parallel=1 | draft=no | temperature=1.0 | max_tokens=512
+01:39:32 | [1] Concurrencia: llama-server con continuous batching; las peticiones se lanzan con 1 worker(s) HTTP (mismo modelo que tendrá la cola)
+01:39:32 | [1] Salidas: benchmark_server_draft0_par1_20260715_013932.csv / benchmark_server_draft0_par1_20260715_013932.log.txt
+01:39:32 | [1] 7 drafts base (rotación cíclica hasta 100)
+01:39:32 | ══════════════════════════════════════════════════════════════════════
+01:39:32 | [2] MONTAJE DEL GRAFO Y PROMPT
+01:39:32 | [2] Dominio montado en 0.8 ms — 22 amenidades, 11 temas, 80 aristas
+01:39:32 | [2] System prompt v4 (1115 chars):
+Eres un redactor inmobiliario profesional de México. Recibirás el DRAFT de una propiedad y un bloque de DECISIONES DE REDACCIÓN ya tomadas. Tu único trabajo es redactar el anuncio obedeciéndolas.
+
+Reglas estrictas:
+1. Escribe SOLO con la información del DRAFT y de las DECISIONES. No agregues características, lugares, vistas ni cualidades que no aparezcan ahí.
+2. Desarrolla los temas en el orden indicado parafraseando sus frases con naturalidad. Destaca las amenidades protagonistas; las secundarias solo de pasada.
+3. PROHIBIDO: precios o cifras monetarias; datos de contacto; invitaciones a llamar, escribir o visitar; lenguaje de urgencia ("aprovecha", "no te lo pierdas", "oportunidad única").
+4. Ubicación: solo el nombre de la colonia. Di "recámaras" y "estacionamientos" (vocabulario de la región). Si el draft no menciona estacionamientos, no hables de ellos.
+5. Título de máximo 10 palabras. Descripción de 21 a 70 palabras, párrafos fluidos, tono cálido y humano, sin mayúsculas sostenidas ni signos de admiración excesivos.
+
+Responde exclusivamente con un JSON con las claves "titulo" y "descripcion".
+01:39:32 | [2] Ejemplo de decisiones (draft draft-001):
+DECISIONES DE REDACCIÓN (obligatorias):
+- Narrativa: casa — espacios, independencia y vida cotidiana.
+- Tono: hogar disponible para renta; enfatiza la vida diaria y la facilidad de instalarse.
+- Audiencia: familias que necesitan espacio para todos.
+- Temas en orden: 1) vida al aire libre — parafrasea: "espacios para disfrutar el aire libre sin salir de casa"; 2) convivencia familiar — parafrasea: "pensada para la convivencia en familia".
+- Amenidades protagonistas: Terraza, Jardín. Secundarias (solo de pasada): Gimnasio.
+- Hechos: a estrenar; superficie amplia.
+01:39:32 | ══════════════════════════════════════════════════════════════════════
+01:39:32 | [3] MONTAJE DEL SERVIDOR (llama-server)
+01:39:32 | [3] Comando: /home/aleosh/Documentos/Ingeniería en Software/9no Cuatrimestre/Integrador/vps/vivia-ai/notebooks/graph-ai/tools/llama-b10015/llama-server --model /home/aleosh/Documentos/Ingeniería en Software/9no Cuatrimestre/Integrador/vps/vivia-ai/notebooks/graph-ai/../../models_registry/llm/Qwen3-4B-Instruct-2507-Q4_K_M.gguf --ctx-size 4096 --threads 4 --parallel 1 --host 127.0.0.1 --port 8033 --no-webui
+01:39:34 | [3] llama-server listo en 2.1 s | RAM del servidor: 4.92 GB | slots: 1 | draft: False
+01:39:34 | ══════════════════════════════════════════════════════════════════════
+01:39:34 | [4] INICIO DE 100 INFERENCIAS
+01:39:59 | [4]   1/100 draft-001 | grafo 0.2 ms | llm 25.3 s (9.9 tok/s gen) | prompt 592 tok | salida 134 tok
+01:40:18 | [4]   2/100 draft-002 | grafo 0.2 ms | llm 18.9 s (9.8 tok/s gen) | prompt 594 tok | salida 128 tok
+01:40:40 | [4]   3/100 draft-003 | grafo 0.1 ms | llm 21.6 s (9.7 tok/s gen) | prompt 591 tok | salida 156 tok
+01:40:58 | [4]   4/100 draft-004 | grafo 0.2 ms | llm 18.7 s (9.7 tok/s gen) | prompt 610 tok | salida 122 tok
+01:41:14 | [4]   5/100 draft-005 | grafo 0.1 ms | llm 16.2 s (9.6 tok/s gen) | prompt 534 tok | salida 112 tok
+01:41:34 | [4]   6/100 draft-006 | grafo 0.3 ms | llm 20.0 s (9.5 tok/s gen) | prompt 615 tok | salida 129 tok
+01:41:51 | [4]   7/100 draft-007 | grafo 0.2 ms | llm 16.9 s (9.7 tok/s gen) | prompt 592 tok | salida 107 tok
+01:42:08 | [4]   8/100 draft-001 | grafo 0.2 ms | llm 16.4 s (9.7 tok/s gen) | prompt 592 tok | salida 103 tok
+01:42:27 | [4]   9/100 draft-002 | grafo 0.2 ms | llm 19.2 s (9.7 tok/s gen) | prompt 594 tok | salida 129 tok
+01:42:40 | [4]  10/100 draft-003 | grafo 0.1 ms | llm 13.4 s (9.6 tok/s gen) | prompt 591 tok | salida 127 tok
+01:42:55 | [4]  11/100 draft-004 | grafo 0.2 ms | llm 14.1 s (9.7 tok/s gen) | prompt 610 tok | salida 135 tok
+01:43:10 | [4]  12/100 draft-005 | grafo 0.2 ms | llm 15.7 s (9.7 tok/s gen) | prompt 534 tok | salida 111 tok
+01:43:31 | [4]  13/100 draft-006 | grafo 0.2 ms | llm 20.7 s (9.7 tok/s gen) | prompt 615 tok | salida 138 tok
+01:43:43 | [4]  14/100 draft-007 | grafo 0.2 ms | llm 12.3 s (9.6 tok/s gen) | prompt 592 tok | salida 117 tok
+01:44:03 | [4]  15/100 draft-001 | grafo 0.2 ms | llm 20.1 s (9.7 tok/s gen) | prompt 592 tok | salida 139 tok
+01:44:18 | [4]  16/100 draft-002 | grafo 0.2 ms | llm 15.1 s (9.7 tok/s gen) | prompt 594 tok | salida 144 tok
+01:44:38 | [4]  17/100 draft-003 | grafo 0.2 ms | llm 19.9 s (9.7 tok/s gen) | prompt 591 tok | salida 137 tok
+01:44:52 | [4]  18/100 draft-004 | grafo 0.2 ms | llm 13.7 s (9.7 tok/s gen) | prompt 610 tok | salida 131 tok
+01:45:09 | [4]  19/100 draft-005 | grafo 0.1 ms | llm 17.0 s (9.7 tok/s gen) | prompt 534 tok | salida 122 tok
+01:45:27 | [4]  20/100 draft-006 | grafo 0.2 ms | llm 18.3 s (9.7 tok/s gen) | prompt 615 tok | salida 115 tok
+01:45:39 | [4]  21/100 draft-007 | grafo 0.2 ms | llm 11.6 s (9.6 tok/s gen) | prompt 592 tok | salida 110 tok
+01:45:59 | [4]  22/100 draft-001 | grafo 0.2 ms | llm 19.6 s (9.7 tok/s gen) | prompt 592 tok | salida 133 tok
+01:46:12 | [4]  23/100 draft-002 | grafo 0.2 ms | llm 13.3 s (9.6 tok/s gen) | prompt 594 tok | salida 127 tok
+01:46:32 | [4]  24/100 draft-003 | grafo 0.2 ms | llm 19.9 s (9.7 tok/s gen) | prompt 591 tok | salida 137 tok
+01:46:47 | [4]  25/100 draft-004 | grafo 0.2 ms | llm 15.4 s (9.5 tok/s gen) | prompt 610 tok | salida 145 tok
+01:47:06 | [4]  26/100 draft-005 | grafo 0.2 ms | llm 19.0 s (9.7 tok/s gen) | prompt 534 tok | salida 140 tok
+01:47:26 | [4]  27/100 draft-006 | grafo 0.2 ms | llm 19.3 s (9.7 tok/s gen) | prompt 615 tok | salida 123 tok
+01:47:37 | [4]  28/100 draft-007 | grafo 0.2 ms | llm 11.2 s (9.6 tok/s gen) | prompt 592 tok | salida 106 tok
+01:47:58 | [4]  29/100 draft-001 | grafo 0.2 ms | llm 21.2 s (9.7 tok/s gen) | prompt 592 tok | salida 147 tok
+01:48:10 | [4]  30/100 draft-002 | grafo 0.2 ms | llm 12.4 s (9.6 tok/s gen) | prompt 594 tok | salida 118 tok
+01:48:32 | [4]  31/100 draft-003 | grafo 0.2 ms | llm 21.4 s (9.6 tok/s gen) | prompt 591 tok | salida 148 tok
+01:48:45 | [4]  32/100 draft-004 | grafo 0.2 ms | llm 13.3 s (9.6 tok/s gen) | prompt 610 tok | salida 126 tok
+01:49:01 | [4]  33/100 draft-005 | grafo 0.1 ms | llm 15.8 s (9.7 tok/s gen) | prompt 534 tok | salida 110 tok
+01:49:23 | [4]  34/100 draft-006 | grafo 0.2 ms | llm 21.7 s (9.5 tok/s gen) | prompt 615 tok | salida 144 tok
+01:49:34 | [4]  35/100 draft-007 | grafo 0.2 ms | llm 11.2 s (9.5 tok/s gen) | prompt 592 tok | salida 105 tok
+01:49:54 | [4]  36/100 draft-001 | grafo 0.2 ms | llm 20.1 s (9.6 tok/s gen) | prompt 592 tok | salida 134 tok
+01:50:07 | [4]  37/100 draft-002 | grafo 0.2 ms | llm 12.9 s (9.5 tok/s gen) | prompt 594 tok | salida 121 tok
+01:50:22 | [4]  38/100 draft-003 | grafo 0.2 ms | llm 15.0 s (9.5 tok/s gen) | prompt 591 tok | salida 141 tok
+01:50:39 | [4]  39/100 draft-004 | grafo 0.2 ms | llm 16.9 s (9.5 tok/s gen) | prompt 610 tok | salida 158 tok
+01:50:54 | [4]  40/100 draft-005 | grafo 0.2 ms | llm 15.1 s (9.6 tok/s gen) | prompt 534 tok | salida 102 tok
+01:51:15 | [4]  41/100 draft-006 | grafo 0.2 ms | llm 21.1 s (9.5 tok/s gen) | prompt 615 tok | salida 138 tok
+01:51:27 | [4]  42/100 draft-007 | grafo 0.2 ms | llm 12.1 s (9.5 tok/s gen) | prompt 592 tok | salida 114 tok
+01:51:49 | [4]  43/100 draft-001 | grafo 0.2 ms | llm 21.8 s (9.4 tok/s gen) | prompt 592 tok | salida 148 tok
+01:52:04 | [4]  44/100 draft-002 | grafo 0.2 ms | llm 15.6 s (9.5 tok/s gen) | prompt 594 tok | salida 146 tok
+01:52:20 | [4]  45/100 draft-003 | grafo 0.2 ms | llm 15.7 s (9.5 tok/s gen) | prompt 591 tok | salida 147 tok
+01:52:34 | [4]  46/100 draft-004 | grafo 0.2 ms | llm 13.9 s (9.5 tok/s gen) | prompt 610 tok | salida 130 tok
+01:52:51 | [4]  47/100 draft-005 | grafo 0.1 ms | llm 17.1 s (9.6 tok/s gen) | prompt 534 tok | salida 121 tok
+01:53:10 | [4]  48/100 draft-006 | grafo 0.2 ms | llm 19.1 s (9.5 tok/s gen) | prompt 615 tok | salida 119 tok
+01:53:23 | [4]  49/100 draft-007 | grafo 0.2 ms | llm 12.7 s (9.5 tok/s gen) | prompt 592 tok | salida 119 tok
+01:53:45 | [4]  50/100 draft-001 | grafo 0.2 ms | llm 21.9 s (9.5 tok/s gen) | prompt 592 tok | salida 150 tok
+01:53:59 | [4]  51/100 draft-002 | grafo 0.2 ms | llm 14.4 s (9.5 tok/s gen) | prompt 594 tok | salida 136 tok
+01:54:15 | [4]  52/100 draft-003 | grafo 0.2 ms | llm 15.3 s (9.5 tok/s gen) | prompt 591 tok | salida 144 tok
+01:54:30 | [4]  53/100 draft-004 | grafo 0.2 ms | llm 15.7 s (9.5 tok/s gen) | prompt 610 tok | salida 147 tok
+01:54:48 | [4]  54/100 draft-005 | grafo 0.1 ms | llm 18.1 s (9.6 tok/s gen) | prompt 534 tok | salida 129 tok
+01:55:10 | [4]  55/100 draft-006 | grafo 0.2 ms | llm 21.2 s (9.5 tok/s gen) | prompt 615 tok | salida 139 tok
+01:55:23 | [4]  56/100 draft-007 | grafo 0.2 ms | llm 13.3 s (9.5 tok/s gen) | prompt 592 tok | salida 125 tok
+01:55:43 | [4]  57/100 draft-001 | grafo 0.2 ms | llm 20.4 s (9.5 tok/s gen) | prompt 592 tok | salida 135 tok
+01:55:57 | [4]  58/100 draft-002 | grafo 0.2 ms | llm 13.6 s (9.5 tok/s gen) | prompt 594 tok | salida 127 tok
+01:56:12 | [4]  59/100 draft-003 | grafo 0.2 ms | llm 15.6 s (9.4 tok/s gen) | prompt 591 tok | salida 145 tok
+01:56:29 | [4]  60/100 draft-004 | grafo 0.2 ms | llm 16.2 s (9.5 tok/s gen) | prompt 610 tok | salida 152 tok
+01:57:48 | [4]  61/100 draft-005 | grafo 0.1 ms | llm 18.3 s (9.0 tok/s gen) | prompt 534 tok | salida 124 tok
+01:58:10 | [4]  62/100 draft-006 | grafo 0.2 ms | llm 21.9 s (9.6 tok/s gen) | prompt 615 tok | salida 146 tok
+01:58:22 | [4]  63/100 draft-007 | grafo 0.2 ms | llm 12.2 s (9.6 tok/s gen) | prompt 592 tok | salida 116 tok
+01:58:42 | [4]  64/100 draft-001 | grafo 0.2 ms | llm 19.7 s (9.6 tok/s gen) | prompt 592 tok | salida 131 tok
+01:58:55 | [4]  65/100 draft-002 | grafo 0.2 ms | llm 13.0 s (9.6 tok/s gen) | prompt 594 tok | salida 123 tok
+01:59:08 | [4]  66/100 draft-003 | grafo 0.2 ms | llm 13.4 s (9.6 tok/s gen) | prompt 591 tok | salida 128 tok
+01:59:20 | [4]  67/100 draft-004 | grafo 0.2 ms | llm 12.1 s (9.6 tok/s gen) | prompt 610 tok | salida 115 tok
+01:59:40 | [4]  68/100 draft-005 | grafo 0.1 ms | llm 19.2 s (9.6 tok/s gen) | prompt 534 tok | salida 143 tok
+01:59:54 | [4]  69/100 draft-006 | grafo 0.2 ms | llm 14.1 s (9.6 tok/s gen) | prompt 615 tok | salida 134 tok
+02:00:05 | [4]  70/100 draft-007 | grafo 0.3 ms | llm 11.6 s (9.6 tok/s gen) | prompt 592 tok | salida 110 tok
+02:00:24 | [4]  71/100 draft-001 | grafo 0.2 ms | llm 18.4 s (9.7 tok/s gen) | prompt 592 tok | salida 122 tok
+02:00:36 | [4]  72/100 draft-002 | grafo 0.2 ms | llm 12.1 s (9.6 tok/s gen) | prompt 594 tok | salida 114 tok
+02:00:52 | [4]  73/100 draft-003 | grafo 0.2 ms | llm 16.0 s (9.6 tok/s gen) | prompt 591 tok | salida 152 tok
+02:01:06 | [4]  74/100 draft-004 | grafo 0.2 ms | llm 14.1 s (9.6 tok/s gen) | prompt 610 tok | salida 133 tok
+02:01:24 | [4]  75/100 draft-005 | grafo 0.2 ms | llm 17.8 s (9.6 tok/s gen) | prompt 534 tok | salida 129 tok
+02:01:45 | [4]  76/100 draft-006 | grafo 0.2 ms | llm 21.0 s (9.6 tok/s gen) | prompt 615 tok | salida 138 tok
+02:01:55 | [4]  77/100 draft-007 | grafo 0.2 ms | llm 10.8 s (9.6 tok/s gen) | prompt 592 tok | salida 102 tok
+02:02:15 | [4]  78/100 draft-001 | grafo 0.2 ms | llm 19.4 s (9.6 tok/s gen) | prompt 592 tok | salida 129 tok
+02:02:29 | [4]  79/100 draft-002 | grafo 0.2 ms | llm 13.6 s (9.6 tok/s gen) | prompt 594 tok | salida 129 tok
+02:02:42 | [4]  80/100 draft-003 | grafo 0.2 ms | llm 13.9 s (9.6 tok/s gen) | prompt 591 tok | salida 131 tok
+02:02:57 | [4]  81/100 draft-004 | grafo 0.2 ms | llm 14.4 s (9.6 tok/s gen) | prompt 610 tok | salida 137 tok
+02:03:14 | [4]  82/100 draft-005 | grafo 0.1 ms | llm 17.4 s (9.6 tok/s gen) | prompt 534 tok | salida 125 tok
+02:03:36 | [4]  83/100 draft-006 | grafo 0.2 ms | llm 21.9 s (9.6 tok/s gen) | prompt 615 tok | salida 146 tok
+02:03:48 | [4]  84/100 draft-007 | grafo 0.2 ms | llm 11.5 s (9.6 tok/s gen) | prompt 592 tok | salida 109 tok
+02:04:07 | [4]  85/100 draft-001 | grafo 0.2 ms | llm 18.8 s (9.6 tok/s gen) | prompt 592 tok | salida 123 tok
+02:04:21 | [4]  86/100 draft-002 | grafo 0.2 ms | llm 14.2 s (9.6 tok/s gen) | prompt 594 tok | salida 135 tok
+02:04:35 | [4]  87/100 draft-003 | grafo 0.2 ms | llm 13.8 s (9.6 tok/s gen) | prompt 591 tok | salida 131 tok
+02:04:50 | [4]  88/100 draft-004 | grafo 0.2 ms | llm 15.4 s (9.6 tok/s gen) | prompt 610 tok | salida 145 tok
+02:05:05 | [4]  89/100 draft-005 | grafo 0.1 ms | llm 15.4 s (9.7 tok/s gen) | prompt 534 tok | salida 105 tok
+02:05:27 | [4]  90/100 draft-006 | grafo 0.3 ms | llm 21.6 s (9.5 tok/s gen) | prompt 615 tok | salida 143 tok
+02:05:39 | [4]  91/100 draft-007 | grafo 0.2 ms | llm 11.8 s (9.5 tok/s gen) | prompt 592 tok | salida 110 tok
+02:05:59 | [4]  92/100 draft-001 | grafo 0.2 ms | llm 20.4 s (9.5 tok/s gen) | prompt 592 tok | salida 136 tok
+02:06:14 | [4]  93/100 draft-002 | grafo 0.2 ms | llm 14.5 s (9.5 tok/s gen) | prompt 594 tok | salida 136 tok
+02:06:28 | [4]  94/100 draft-003 | grafo 0.2 ms | llm 14.7 s (9.5 tok/s gen) | prompt 591 tok | salida 137 tok
+02:06:41 | [4]  95/100 draft-004 | grafo 0.2 ms | llm 13.0 s (9.4 tok/s gen) | prompt 610 tok | salida 121 tok
+02:06:59 | [4]  96/100 draft-005 | grafo 0.1 ms | llm 17.2 s (9.6 tok/s gen) | prompt 534 tok | salida 122 tok
+02:07:19 | [4]  97/100 draft-006 | grafo 0.2 ms | llm 20.1 s (9.5 tok/s gen) | prompt 615 tok | salida 128 tok
+02:07:30 | [4]  98/100 draft-007 | grafo 0.2 ms | llm 11.0 s (9.5 tok/s gen) | prompt 592 tok | salida 103 tok
+02:07:49 | [4]  99/100 draft-001 | grafo 0.2 ms | llm 19.0 s (9.5 tok/s gen) | prompt 592 tok | salida 122 tok
+02:08:02 | [4] 100/100 draft-002 | grafo 0.2 ms | llm 13.8 s (9.5 tok/s gen) | prompt 594 tok | salida 129 tok
+02:08:03 | ══════════════════════════════════════════════════════════════════════
+02:08:03 | [5] RECOLECCIÓN DE RESULTADOS
+02:08:03 | [5] CSV escrito: /home/aleosh/Documentos/Ingeniería en Software/9no Cuatrimestre/Integrador/vps/vivia-ai/notebooks/graph-ai/benchmark_server_draft0_par1_20260715_013932.csv (100 filas)
+02:08:03 | [5] Tiempo total: 27.5 min → throughput 3.6 anuncios/min (16.5 s por anuncio efectivos)
+02:08:03 | [5] t_grafo_ms   : prom 0.19 | mediana 0.18 | min 0.12 | max 0.27 | p95 0.25
+02:08:03 | [5] t_llm_s      : prom 16.47 | mediana 15.73 | min 10.78 | max 25.26 | p95 21.79
+02:08:03 | [5] t_parseo_ms  : prom 0.01 | mediana 0.01 | min 0.01 | max 0.02 | p95 0.01
+02:08:03 | [5] t_total_s    : prom 16.47 | mediana 15.73 | min 10.78 | max 25.26 | p95 21.79
+02:08:03 | [5] tokens_prompt: prom 589.78 | mediana 592.00 | min 534.00 | max 615.00 | p95 615.00
+02:08:03 | [5] tokens_salida: prom 129.14 | mediana 129.00 | min 102.00 | max 158.00 | p95 149.90
+02:08:03 | [5] tok/s gen    : prom 9.58 | mediana 9.60 | min 9.00 | max 9.90 | p95 9.70 (del timing interno del servidor)
+02:08:03 | [5] tok/s prompt : prom 26.16 | mediana 25.55 | min 7.40 | max 50.80 | p95 43.70
+02:08:03 | [5] palabras     : prom 65.42 | mediana 65.00 | min 45.00 | max 92.00 | p95 79.00
+02:08:03 | [5] Violaciones precio/contacto: 0/100
+02:08:03 | [5] RAM final del servidor: 6.64 GB
+02:08:03 | [5] FIN

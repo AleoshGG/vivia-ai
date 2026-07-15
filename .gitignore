@@ -76,3 +76,6 @@ models_registry/*
 Thumbs.db
 
 datasets/
+# Binarios de llama.cpp para el benchmark de llama-server (39 MB, re-descargables:
+# https://github.com/ggml-org/llama.cpp/releases → llama-*-bin-ubuntu-x64.tar.gz → notebooks/graph-ai/tools/)
+notebooks/graph-ai/tools/

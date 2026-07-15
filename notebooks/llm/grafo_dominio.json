@@ -1,0 +1,409 @@
+{
+  "directed": true,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "tipo": "tema",
+      "nombre": "vida al aire libre",
+      "frases": [
+        "espacios para disfrutar el aire libre sin salir de casa",
+        "momentos al exterior en el día a día"
+      ],
+      "id": "tema:vida_al_aire_libre"
+    },
+    {
+      "tipo": "tema",
+      "nombre": "convivencia familiar",
+      "frases": [
+        "pensada para la convivencia en familia",
+        "espacios donde cada quien tiene su lugar"
+      ],
+      "id": "tema:convivencia_familiar"
+    },
+    {
+      "tipo": "tema",
+      "nombre": "bienestar",
+      "frases": [
+        "facilita una rutina activa y saludable",
+        "bienestar sin salir del hogar"
+      ],
+      "id": "tema:bienestar"
+    },
+    {
+      "tipo": "tema",
+      "nombre": "practicidad",
+      "frases": [
+        "resuelve el día a día con comodidad",
+        "una distribución que aprovecha cada metro"
+      ],
+      "id": "tema:practicidad"
+    },
+    {
+      "tipo": "tema",
+      "nombre": "tranquilidad",
+      "frases": [
+        "un ritmo de vida tranquilo",
+        "privacidad para descansar"
+      ],
+      "id": "tema:tranquilidad"
+    },
+    {
+      "tipo": "tema",
+      "nombre": "seguridad",
+      "frases": [
+        "acceso controlado para mayor tranquilidad",
+        "un entorno cuidado dentro del condominio"
+      ],
+      "id": "tema:seguridad"
+    },
+    {
+      "tipo": "tema",
+      "nombre": "estilo moderno",
+      "frases": [
+        "diseño actual con personalidad",
+        "ambientes luminosos y contemporáneos"
+      ],
+      "id": "tema:estilo_moderno"
+    },
+    {
+      "tipo": "tema",
+      "nombre": "patrimonio",
+      "frases": [
+        "un patrimonio que se disfruta todos los días",
+        "una decisión pensada en el largo plazo"
+      ],
+      "id": "tema:patrimonio"
+    },
+    {
+      "tipo": "tema",
+      "nombre": "flexibilidad",
+      "frases": [
+        "lista para habitarse sin complicaciones",
+        "ideal para instalarse pronto"
+      ],
+      "id": "tema:flexibilidad"
+    },
+    {
+      "tipo": "amenidad",
+      "nombre": "terraza",
+      "aliases": [
+        "terraza"
+      ],
+      "id": "amenidad:terraza"
+    },
+    {
+      "tipo": "amenidad",
+      "nombre": "jardín",
+      "aliases": [
+        "jardin",
+        "jardín",
+        "áreas verdes",
+        "garden"
+      ],
+      "id": "amenidad:jardín"
+    },
+    {
+      "tipo": "amenidad",
+      "nombre": "gimnasio",
+      "aliases": [
+        "gym",
+        "gimnasio",
+        "fitness"
+      ],
+      "id": "amenidad:gimnasio"
+    },
+    {
+      "tipo": "amenidad",
+      "nombre": "alberca",
+      "aliases": [
+        "alberca",
+        "piscina",
+        "pool"
+      ],
+      "id": "amenidad:alberca"
+    },
+    {
+      "tipo": "amenidad",
+      "nombre": "roof garden",
+      "aliases": [
+        "roof garden",
+        "roofgarden",
+        "roof-garden"
+      ],
+      "id": "amenidad:roof garden"
+    },
+    {
+      "tipo": "amenidad",
+      "nombre": "seguridad",
+      "aliases": [
+        "seguridad",
+        "seguridad 24h",
+        "vigilancia",
+        "caseta de vigilancia"
+      ],
+      "id": "amenidad:seguridad"
+    },
+    {
+      "tipo": "amenidad",
+      "nombre": "elevador",
+      "aliases": [
+        "elevador",
+        "ascensor"
+      ],
+      "id": "amenidad:elevador"
+    },
+    {
+      "tipo": "amenidad",
+      "nombre": "patio",
+      "aliases": [
+        "patio"
+      ],
+      "id": "amenidad:patio"
+    },
+    {
+      "tipo": "amenidad",
+      "nombre": "cuarto de servicio",
+      "aliases": [
+        "cuarto de servicio"
+      ],
+      "id": "amenidad:cuarto de servicio"
+    },
+    {
+      "tipo": "amenidad",
+      "nombre": "área de lavado",
+      "aliases": [
+        "área de lavado",
+        "area de lavado",
+        "cuarto de lavado"
+      ],
+      "id": "amenidad:área de lavado"
+    },
+    {
+      "tipo": "amenidad",
+      "nombre": "bodega",
+      "aliases": [
+        "bodega"
+      ],
+      "id": "amenidad:bodega"
+    },
+    {
+      "tipo": "amenidad",
+      "nombre": "doble altura",
+      "aliases": [
+        "doble altura"
+      ],
+      "id": "amenidad:doble altura"
+    },
+    {
+      "tipo": "amenidad",
+      "nombre": "cocina integral",
+      "aliases": [
+        "cocina integral",
+        "cocina equipada"
+      ],
+      "id": "amenidad:cocina integral"
+    },
+    {
+      "tipo": "amenidad",
+      "nombre": "balcón",
+      "aliases": [
+        "balcon",
+        "balcón"
+      ],
+      "id": "amenidad:balcón"
+    },
+    {
+      "tipo": "tipo_propiedad",
+      "nombre": "CASA",
+      "narrativa": "se narra por sus espacios, su independencia y la vida cotidiana que permite",
+      "id": "tipo:CASA"
+    },
+    {
+      "tipo": "tipo_propiedad",
+      "nombre": "DEPARTAMENTO",
+      "narrativa": "se narra por su practicidad, la vida en conjunto y el estilo de vida",
+      "id": "tipo:DEPARTAMENTO"
+    },
+    {
+      "tipo": "tipo_propiedad",
+      "nombre": "LOFT",
+      "narrativa": "se narra por su diseño, la amplitud visual y la personalidad del espacio",
+      "id": "tipo:LOFT"
+    },
+    {
+      "tipo": "tipo_propiedad",
+      "nombre": "TERRENO",
+      "narrativa": "se narra por su potencial y las posibilidades de proyecto",
+      "id": "tipo:TERRENO"
+    },
+    {
+      "tipo": "operacion",
+      "nombre": "RENTA",
+      "tono": "hogar disponible para renta; enfatiza la vida diaria y la facilidad de instalarse; jamás menciones montos, rentas ni mensualidades",
+      "id": "operacion:RENTA"
+    },
+    {
+      "tipo": "operacion",
+      "nombre": "VENTA",
+      "tono": "propiedad en venta; enfatiza permanencia y valor de largo plazo; jamás menciones precios, montos ni retorno de inversión",
+      "id": "operacion:VENTA"
+    },
+    {
+      "tipo": "audiencia",
+      "nombre": "familia grande",
+      "frase": "familias que necesitan espacio para todos",
+      "id": "audiencia:familia_grande"
+    },
+    {
+      "tipo": "audiencia",
+      "nombre": "familia pareja",
+      "frase": "parejas o familias que van creciendo",
+      "id": "audiencia:familia_pareja"
+    },
+    {
+      "tipo": "audiencia",
+      "nombre": "profesionista",
+      "frase": "profesionistas que buscan practicidad",
+      "id": "audiencia:profesionista"
+    },
+    {
+      "tipo": "audiencia",
+      "nombre": "persona sola",
+      "frase": "quien busca un espacio propio y eficiente",
+      "id": "audiencia:persona_sola"
+    }
+  ],
+  "edges": [
+    {
+      "relacion": "evoca",
+      "source": "amenidad:terraza",
+      "target": "tema:vida_al_aire_libre"
+    },
+    {
+      "relacion": "evoca",
+      "source": "amenidad:jardín",
+      "target": "tema:vida_al_aire_libre"
+    },
+    {
+      "relacion": "evoca",
+      "source": "amenidad:jardín",
+      "target": "tema:convivencia_familiar"
+    },
+    {
+      "relacion": "evoca",
+      "source": "amenidad:gimnasio",
+      "target": "tema:bienestar"
+    },
+    {
+      "relacion": "evoca",
+      "source": "amenidad:alberca",
+      "target": "tema:bienestar"
+    },
+    {
+      "relacion": "evoca",
+      "source": "amenidad:alberca",
+      "target": "tema:convivencia_familiar"
+    },
+    {
+      "relacion": "evoca",
+      "source": "amenidad:roof garden",
+      "target": "tema:vida_al_aire_libre"
+    },
+    {
+      "relacion": "evoca",
+      "source": "amenidad:roof garden",
+      "target": "tema:estilo_moderno"
+    },
+    {
+      "relacion": "evoca",
+      "source": "amenidad:seguridad",
+      "target": "tema:seguridad"
+    },
+    {
+      "relacion": "evoca",
+      "source": "amenidad:elevador",
+      "target": "tema:practicidad"
+    },
+    {
+      "relacion": "evoca",
+      "source": "amenidad:patio",
+      "target": "tema:vida_al_aire_libre"
+    },
+    {
+      "relacion": "evoca",
+      "source": "amenidad:patio",
+      "target": "tema:convivencia_familiar"
+    },
+    {
+      "relacion": "evoca",
+      "source": "amenidad:cuarto de servicio",
+      "target": "tema:practicidad"
+    },
+    {
+      "relacion": "evoca",
+      "source": "amenidad:área de lavado",
+      "target": "tema:practicidad"
+    },
+    {
+      "relacion": "evoca",
+      "source": "amenidad:bodega",
+      "target": "tema:practicidad"
+    },
+    {
+      "relacion": "evoca",
+      "source": "amenidad:doble altura",
+      "target": "tema:estilo_moderno"
+    },
+    {
+      "relacion": "evoca",
+      "source": "amenidad:cocina integral",
+      "target": "tema:practicidad"
+    },
+    {
+      "relacion": "evoca",
+      "source": "amenidad:balcón",
+      "target": "tema:vida_al_aire_libre"
+    },
+    {
+      "relacion": "angulo",
+      "source": "tipo:CASA",
+      "target": "tema:convivencia_familiar"
+    },
+    {
+      "relacion": "angulo",
+      "source": "tipo:CASA",
+      "target": "tema:tranquilidad"
+    },
+    {
+      "relacion": "angulo",
+      "source": "tipo:DEPARTAMENTO",
+      "target": "tema:practicidad"
+    },
+    {
+      "relacion": "angulo",
+      "source": "tipo:DEPARTAMENTO",
+      "target": "tema:estilo_moderno"
+    },
+    {
+      "relacion": "angulo",
+      "source": "tipo:LOFT",
+      "target": "tema:estilo_moderno"
+    },
+    {
+      "relacion": "angulo",
+      "source": "tipo:TERRENO",
+      "target": "tema:patrimonio"
+    },
+    {
+      "relacion": "evoca",
+      "source": "operacion:RENTA",
+      "target": "tema:flexibilidad"
+    },
+    {
+      "relacion": "evoca",
+      "source": "operacion:VENTA",
+      "target": "tema:patrimonio"
+    }
+  ]
+}
