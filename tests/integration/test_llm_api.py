@@ -35,7 +35,7 @@ DRAFT_PAYLOAD = {
 def _token(exp_offset_s: int = 300, secret: str | None = None) -> str:
     return jwt.encode(
         {"sub": "user-1", "exp": int(time.time()) + exp_offset_s},
-        secret or settings.jwt_secret_key,
+        secret or settings.jwt_secret,
         algorithm=settings.jwt_algorithm,
     )
 
