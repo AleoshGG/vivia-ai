@@ -1,0 +1,18 @@
+origen,origen_tipo,tema,peso
+Casa,tipo,convivencia_familiar,0.8
+Casa,tipo,tranquilidad,0.6
+Departamento,tipo,practicidad,0.8
+Departamento,tipo,estilo_moderno,0.6
+Terreno,tipo,patrimonio,0.8
+Local Comercial,tipo,funcionalidad_comercial,0.8
+Oficina,tipo,funcionalidad_comercial,0.8
+Oficina,tipo,practicidad,0.6
+Bodega,tipo,funcionalidad_comercial,0.8
+Bodega,tipo,practicidad,0.3
+RENTA,operacion,flexibilidad,0.6
+VENTA,operacion,patrimonio,0.8
+a_estrenar,bucket,estilo_moderno,0.6
+a_estrenar,bucket,flexibilidad,0.3
+con_historia,bucket,tranquilidad,0.3
+area_amplia,bucket,convivencia_familiar,0.3
+en_condominio,bucket,seguridad,0.6

@@ -1,0 +1,14 @@
+origen,origen_tipo,audiencia,peso
+rec_4_mas,bucket,familia_grande,0.9
+rec_2_3,bucket,familia_pareja,0.6
+rec_1,bucket,profesionista,0.6
+rec_1,bucket,persona_sola,0.3
+area_amplia,bucket,familia_grande,0.3
+area_compacta,bucket,persona_sola,0.6
+Casa,tipo,familia_grande,0.3
+RENTA,operacion,profesionista,0.3
+Local Comercial,tipo,negocio_emprendedor,0.9
+Oficina,tipo,empresa,0.9
+Oficina,tipo,negocio_emprendedor,0.6
+Bodega,tipo,empresa,0.9
+Terreno,tipo,inversionista,0.9

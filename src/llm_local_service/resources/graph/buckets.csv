@@ -1,0 +1,11 @@
+bucket,campo,condicion,descripcion
+a_estrenar,constructionYear,antiguedad <= 1,construida este año o el anterior
+construccion_reciente,constructionYear,1 < antiguedad <= 10,construcción de la última década
+con_historia,constructionYear,antiguedad > 30,más de 30 años; nombrar como carácter sin afirmar estado o remodelaciones
+area_amplia,areaM2,areaM2 >= 180,umbral por validar con percentiles del mercado local
+area_compacta,areaM2,areaM2 <= 50,describir como eficiente; nunca como amplia
+rec_4_mas,bedrooms,bedrooms >= 4,
+rec_2_3,bedrooms,2 <= bedrooms <= 3,
+rec_1,bedrooms,bedrooms == 1,
+en_condominio,condominium,condominium == true,
+sin_estacionamiento,parkingSpaces,parkingSpaces == 0,no mencionar estacionamientos en el anuncio

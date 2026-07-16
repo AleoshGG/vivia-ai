@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Anuncio inmobiliario generado",
+  "description": "Contrato de salida del LLM para la generación de título y descripción (prompt v6). El servidor no fuerza esta gramática: el formato se pide en el system prompt y se valida al parsear la respuesta.",
+  "type": "object",
+  "properties": {
+    "titulo": {
+      "type": "string",
+      "description": "Título del anuncio, máximo 10 palabras."
+    },
+    "descripcion": {
+      "type": "string",
+      "description": "Descripción del anuncio, de 21 a 70 palabras, sin precios, contacto ni lenguaje de urgencia."
+    }
+  },
+  "required": ["titulo", "descripcion"],
+  "additionalProperties": false
+}

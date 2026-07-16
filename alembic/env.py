@@ -4,14 +4,15 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from config.settings import settings
-from src.anomaly_detector_api.persistence.models_db import Base
+from src.anomaly_detector_api.persistence.models_db import Base as AnomalyBase
+from src.llm_local_service.persistence.models_db import Base as LlmBase
 
 config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = Base.metadata
+target_metadata = [AnomalyBase.metadata, LlmBase.metadata]
 
 
 def _sync_url() -> str:

@@ -55,6 +55,20 @@ class Settings(BaseSettings):
     llm_max_queue_size: int = 10
     # Backend simulado: pausa entre fragmentos para observar el streaming real.
     llm_simulated_delay_s: float = 0.05
+    # Versionado del generador (MLflow Model Registry) y modelo servido.
+    llm_model_name: str = "llm-listing-generator"
+    llm_model_stage: str = "Production"
+    llm_gguf_file: str = "Qwen3-1.7B-Q4_K_M.gguf"
+    # URL del contenedor llama-server (en compose: http://llama-server:8080).
+    llama_server_url: str = "http://localhost:8080"
+    # Sampling validado en notebooks/graph-ai/benchmark_prompt_v6.py (Qwen3 no-thinking).
+    llm_temperature: float = 1.0
+    llm_top_p: float = 0.8
+    llm_top_k: int = 20
+    llm_max_tokens: int = 512
+    llm_request_timeout: float = 120.0
+    # Artefactos de producción del generador (grafo v4 + prompt v6).
+    graph_resources_path: Path = Path("src/llm_local_service/resources")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

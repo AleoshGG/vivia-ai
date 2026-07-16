@@ -1,0 +1,10 @@
+origen,origen_tipo,tema_bloqueado,porque
+VENTA,operacion,flexibilidad,el discurso de instalarse pronto es de renta; en venta suena a urgencia de cierre
+RENTA,operacion,patrimonio,hablar de patrimonio e inversión de largo plazo es discurso de venta
+con_historia,bucket,estilo_moderno,no afirmar modernidad en construcciones de más de 30 años que el draft no sustenta
+area_compacta,bucket,convivencia_familiar,un espacio de 50 m² o menos no se anuncia como convivencia de familia numerosa
+Local Comercial,tipo,convivencia_familiar,un inmueble comercial no se narra con vida familiar
+Local Comercial,tipo,tranquilidad,a un local le conviene flujo y actividad; no se vende con quietud
+Oficina,tipo,convivencia_familiar,un inmueble comercial no se narra con vida familiar
+Bodega,tipo,convivencia_familiar,un inmueble comercial no se narra con vida familiar
+Bodega,tipo,estilo_moderno,una bodega se narra por capacidad y operación; no por diseño

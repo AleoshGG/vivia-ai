@@ -46,12 +46,45 @@ services:
     networks:
       - vivia_network
 
+  llama-server:
+    # Tag pineado a la release del binario validado en los benchmarks
+    # (notebooks/graph-ai/tools/llama-b10015) para reproducibilidad.
+    image: ghcr.io/ggml-org/llama.cpp:server-b10015
+    container_name: vivia-llama-server
+    # El GGUF vive fuera de la imagen (ver nota de anomaly-api): se monta desde
+    # MODELS_REGISTRY_HOST en el VPS; en local cae al directorio del repo.
+    volumes:
+      - ${MODELS_REGISTRY_HOST:-./models_registry}:/models:ro
+    # Configuración validada en benchmark_prompt_v6.py: 4 threads, contexto
+    # 4096, una generación a la vez y thinking desactivado (Qwen3 no-thinking).
+    command: >
+      -m /models/llm/Qwen3-1.7B-Q4_K_M.gguf
+      --host 0.0.0.0
+      --port 8080
+      --threads 4
+      --ctx-size 4096
+      --parallel 1
+      --chat-template-kwargs '{"enable_thinking": false}'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - vivia_network
+
   llm-local:
     build:
       context: .
       dockerfile: ./infrastructure/docker/llm_local.Dockerfile
     container_name: vivia-llm-local
     env_file: .env
+    environment:
+      - LLAMA_SERVER_URL=http://llama-server:8080
+    depends_on:
+      llama-server:
+        condition: service_healthy
     networks:
       - vivia_network
 
