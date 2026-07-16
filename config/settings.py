@@ -45,6 +45,17 @@ class Settings(BaseSettings):
     clustering_service_port: int = 8002
     llm_local_port: int = 8003
 
+    # === LLM Local Service ===
+    # JWT: el servicio LLM recibe tráfico directo del cliente móvil (no usa la API key interna).
+    # El backend transaccional firma con HS512, que requiere un secret de al menos 64 bytes.
+    jwt_secret: str = "changeme-jwt-secret-of-at-least-64-bytes-for-hs512-change-me-now!"
+    jwt_algorithm: str = "HS512"
+    # Cola de espera: una generación a la vez (el LLM real correrá con --parallel 1).
+    llm_max_concurrent: int = 1
+    llm_max_queue_size: int = 10
+    # Backend simulado: pausa entre fragmentos para observar el streaming real.
+    llm_simulated_delay_s: float = 0.05
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 # Instancia global de settings
