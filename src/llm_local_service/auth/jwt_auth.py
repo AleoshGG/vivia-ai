@@ -27,7 +27,7 @@ async def verify_jwt(
     try:
         claims = jwt.decode(
             credentials.credentials,
-            settings.jwt_secret_key,
+            settings.jwt_secret,
             algorithms=[settings.jwt_algorithm],
         )
     except jwt.ExpiredSignatureError:
