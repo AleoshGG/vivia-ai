@@ -10,6 +10,8 @@ from ..models.property import PropertyRequest
 from ..persistence.database import build_engine, build_session_factory
 from ..persistence.inference_repository import InferenceRepository
 from ..services.anomaly_model import AnomalyModel
+from ..services.text_risk import TextRiskService
+from ..services.text_risk.llm_text_client import LlamaTextRiskClient
 from ..usecases.analyze_property import AnalyzePropertyUseCase
 
 logger = logging.getLogger(__name__)
@@ -33,6 +35,7 @@ class AnomalyQueueConsumer:
         self._loop       = None
         self._engine     = None
         self._repository = None
+        self._text_risk  = None
 
     def run(self):
         # Loop + engine dedicados a este hilo (ver nota en __init__). Se crean una
@@ -41,6 +44,15 @@ class AnomalyQueueConsumer:
         asyncio.set_event_loop(self._loop)
         self._engine = build_engine()
         self._repository = InferenceRepository(build_session_factory(self._engine))
+        # Cliente sin estado (httpx por llamada) — seguro en este hilo/loop.
+        self._text_risk = TextRiskService(
+            LlamaTextRiskClient(
+                settings.llama_server_url,
+                timeout=settings.text_risk_timeout,
+                max_tokens=settings.text_risk_max_tokens,
+            ),
+            enabled=settings.text_risk_enabled,
+        )
 
         delay = 5
         try:
@@ -105,7 +117,9 @@ class AnomalyQueueConsumer:
             payload = json.loads(body)
             draft_id = payload.get("draft", {}).get("id", "unknown")
             request = PropertyRequest.model_validate({"draft": payload["draft"]})
-            use_case = AnalyzePropertyUseCase(self._model, self._repository, source="queue")
+            use_case = AnalyzePropertyUseCase(
+                self._model, self._repository, self._text_risk, source="queue"
+            )
             # Mismo loop dedicado del hilo (no asyncio.run, que crearía uno nuevo
             # por mensaje y rompería el engine asyncpg atado a este loop).
             self._loop.run_until_complete(use_case.execute(request))

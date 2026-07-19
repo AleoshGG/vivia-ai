@@ -92,12 +92,15 @@ class InferenceRecord(BaseModel):
     id: UUID
     draft_id: str = Field(..., serialization_alias="draftId")
     is_anomaly: bool = Field(..., serialization_alias="isAnomaly")
-    score: float
+    score: Optional[float] = None
     approved: bool
     reason: str
     model_version: str = Field(..., serialization_alias="modelVersion")
     source: str
-    features: dict
+    features: Optional[dict] = None
+    text_is_fraud: bool = Field(False, serialization_alias="textIsFraud")
+    text_reasons: Optional[List[str]] = Field(None, serialization_alias="textReasons")
+    anomaly_source: Optional[str] = Field(None, serialization_alias="anomalySource")
     created_at: datetime = Field(..., serialization_alias="createdAt")
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)

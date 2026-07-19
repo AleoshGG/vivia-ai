@@ -28,6 +28,10 @@ def _repository(request: Request):
     return request.app.state.inference_repository
 
 
+def _text_risk(request: Request):
+    return request.app.state.text_risk_service
+
+
 @router.post("/detect", dependencies=[Depends(verify_internal_api_key)])
 async def detect_anomaly(request: AnomalyRequest):
     """
@@ -53,6 +57,7 @@ async def analyze_property(request: PropertyRequest, http_request: Request):
     use_case = AnalyzePropertyUseCase(
         model=_model(http_request),
         repository=_repository(http_request),
+        text_risk=_text_risk(http_request),
         source="http",
     )
     result = await use_case.execute(request)

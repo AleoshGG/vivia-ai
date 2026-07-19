@@ -23,6 +23,8 @@ services:
     environment:
       # Necesaria para descargar el modelo (artefactos) desde GCS vía MLflow.
       - GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcs.json
+      # Backend del análisis de texto (Qwen3 zero-shot). Reusa el llama-server.
+      - LLAMA_SERVER_URL=http://llama-server:8080
     # Los artefactos del modelo viven fuera de la imagen (no se versionan en Git
     # ni se hornean en el build). En el VPS se montan desde MODELS_REGISTRY_HOST;
     # en local cae al directorio del repo por defecto.
@@ -32,6 +34,8 @@ services:
     depends_on:
       mlflow:
         condition: service_started
+      llama-server:
+        condition: service_healthy
     networks:
       - vivia_network
 

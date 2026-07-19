@@ -40,6 +40,13 @@ class Settings(BaseSettings):
     # === Model Registry ===
     model_registry_path: Path = Path('models_registry')
 
+    # === Análisis de texto (riesgo textual del servicio de anomalías) ===
+    # Reusa `llama_server_url` como backend (Qwen3 zero-shot). El feature-flag
+    # permite operar solo con reglas si el llama-server no está disponible.
+    text_risk_enabled: bool = True
+    text_risk_timeout: float = 30.0
+    text_risk_max_tokens: int = 400
+
     # === Servicios ===
     anomaly_api_port: int = 8001
     clustering_service_port: int = 8002

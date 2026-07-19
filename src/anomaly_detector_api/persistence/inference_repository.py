@@ -26,14 +26,21 @@ class InferenceRepository:
         *,
         draft_id: str,
         is_anomaly: bool,
-        score: float,
         approved: bool,
         reason: str,
         model_version: str,
         source: str,
-        features: dict,
+        score: Optional[float] = None,
+        features: Optional[dict] = None,
+        text_is_fraud: bool = False,
+        text_reasons: Optional[list] = None,
+        anomaly_source: Optional[str] = None,
     ) -> AnomalyInference:
-        """Inserta una inferencia y devuelve el registro persistido."""
+        """Inserta una inferencia y devuelve el registro persistido.
+
+        `score`/`features` quedan en None cuando el texto rechaza y el Isolation
+        Forest no llega a ejecutarse (cortocircuito).
+        """
         record = AnomalyInference(
             id=uuid.uuid4(),
             draft_id=draft_id,
@@ -44,6 +51,9 @@ class InferenceRepository:
             model_version=model_version,
             source=source,
             features=features,
+            text_is_fraud=text_is_fraud,
+            text_reasons=text_reasons,
+            anomaly_source=anomaly_source,
         )
         async with self._session_factory() as session:
             async with session.begin():

@@ -9,7 +9,19 @@ from .messaging.anomaly_queue_consumer import AnomalyQueueConsumer
 from .persistence.database import build_engine, build_session_factory, init_models
 from .persistence.inference_repository import InferenceRepository
 from .services.anomaly_model import AnomalyModel
+from .services.text_risk import TextRiskService
+from .services.text_risk.llm_text_client import LlamaTextRiskClient
 from shared.health import router as health_router
+
+
+def build_text_risk_service() -> TextRiskService:
+    """Construye el subsistema de riesgo textual (cliente HTTP a llama-server)."""
+    client = LlamaTextRiskClient(
+        settings.llama_server_url,
+        timeout=settings.text_risk_timeout,
+        max_tokens=settings.text_risk_max_tokens,
+    )
+    return TextRiskService(client, enabled=settings.text_risk_enabled)
 
 
 @asynccontextmanager
@@ -26,6 +38,10 @@ async def lifespan(app: FastAPI):
     model = AnomalyModel(settings.anomaly_model_name, settings.anomaly_model_stage)
     model.load()
     app.state.anomaly_model = model
+
+    # Subsistema de riesgo textual (Qwen3 vía llama-server)
+    text_risk = build_text_risk_service()
+    app.state.text_risk_service = text_risk
 
     # Consumidor de la cola de RabbitMQ
     consumer = AnomalyQueueConsumer(model=model)
