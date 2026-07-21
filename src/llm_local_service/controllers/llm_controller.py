@@ -5,6 +5,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 
 from ..auth.jwt_auth import verify_jwt
+from ..auth.premium_gate import require_premium
 from ..models.generation import GenerationListResponse, GenerationRecord, GenerationRequest
 from ..services.request_queue import RequestQueue
 from ..usecases.generate_content import GenerateContentUseCase
@@ -188,18 +189,19 @@ _CONTENTS_SSE_EXAMPLE = (
     summary="Genera título y descripción con inferencia real (streaming SSE)",
     description=_CONTENTS_DESCRIPTION,
     tags=["contents"],
-    dependencies=[Depends(verify_jwt)],
+    dependencies=[Depends(verify_jwt), Depends(require_premium)],
     responses={
         200: {
             "description": "Stream SSE: queued* → title → delta* → done (o error).",
             "content": {"text/event-stream": {"example": _CONTENTS_SSE_EXAMPLE}},
         },
         401: {"description": "JWT ausente, inválido o expirado."},
+        403: {"description": "El usuario no tiene suscripción Premium activa."},
         422: {"description": "Draft inválido (falta un campo requerido)."},
         503: {
             "description": (
-                "Cola de generación llena, o llama-server no disponible al "
-                "iniciar el stream."
+                "Cola de generación llena, llama-server no disponible al "
+                "iniciar el stream, o no se pudo verificar el estado de suscripción."
             )
         },
     },

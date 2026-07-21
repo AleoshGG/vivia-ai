@@ -76,6 +76,9 @@ class Settings(BaseSettings):
     llm_request_timeout: float = 120.0
     # Artefactos de producción del generador (grafo v4 + prompt v6).
     graph_resources_path: Path = Path("src/llm_local_service/resources")
+    # Backend transaccional (Spring): contrato GET /subscriptions/me para gating premium.
+    vivia_backend_url: str = "https://vivia.aleosh.online/api"
+    subscriptions_check_timeout: float = 5.0
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
